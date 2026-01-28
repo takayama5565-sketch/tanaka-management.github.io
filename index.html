@@ -3,18 +3,90 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>顧客管理＆写真ビューア</title>
+    <title>分割手数料計算アプリ</title>
     <style>
+        .password-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .password-container {
+            background: var(--color-surface);
+            padding: 32px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            max-width: 300px;
+        }
+
+        .password-container h2 {
+            margin-bottom: 16px;
+            color: var(--color-primary);
+            font-size: 18px;
+        }
+
+        .password-container input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 16px;
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .password-container button {
+            width: 100%;
+            padding: 12px;
+            background: var(--color-primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .password-container button:hover {
+            background: var(--color-primary-hover);
+        }
+
+        .password-error {
+            color: var(--color-error);
+            font-size: 12px;
+            margin-top: 8px;
+            display: none;
+        }
+
+        .main-content {
+            display: none;
+        }
+
+        .main-content.unlocked {
+            display: block;
+        }
+
         :root {
-            --primary-color: #0066CC;
-            --primary-hover: #0052A3;
-            --bg-color: #FFFFFF;
-            --text-color: #1F2937;
-            --border-color: #D1D5DB;
-            --light-bg: #E5E7EB;
-            --success-color: #10B981;
-            --error-color: #DC2626;
-            --vip-color: #FFB800;
+            --color-primary: #32b8c6;
+            --color-primary-hover: #1d745f;
+            --color-primary-active: #1a7273;
+            --color-bg: #fcfcf9;
+            --color-surface: #ffffff;
+            --color-text: #134252;
+            --color-text-secondary: #626c71;
+            --color-border: rgba(94, 82, 64, 0.2);
+            --color-success: #208d8d;
+            --color-error: #c0152f;
+            --color-warning: #a84b2f;
+            --color-focus: rgba(33, 128, 141, 0.4);
         }
 
         * {
@@ -24,2020 +96,1419 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            line-height: 1.6;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
+            background-color: var(--color-bg);
+            color: var(--color-text);
+            padding: 12px;
+            line-height: 1.5;
         }
 
         .container {
-            max-width: 600px;
+            max-width: 500px;
             margin: 0 auto;
-            background-color: var(--bg-color);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
         }
 
         header {
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
-            color: white;
-            padding: 24px 16px;
             text-align: center;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            padding: 16px 0;
+            border-bottom: 2px solid var(--color-border);
         }
 
-        header h1 {
-            font-size: 24px;
+        h1 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .subtitle {
+            font-size: 12px;
+            color: var(--color-text-secondary);
+        }
+
+        section {
+            background: var(--color-surface);
+            border-radius: 8px;
+            border: 1px solid var(--color-border);
+            padding: 16px;
+            margin-bottom: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+        }
+
+        section h2 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: var(--color-primary);
+            border-bottom: 1px solid var(--color-border);
+            padding-bottom: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        label {
+            display: block;
+            font-size: 12px;
+            font-weight: 500;
+            margin-bottom: 6px;
+            color: var(--color-text);
+        }
+
+        select, input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            font-size: 14px;
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            background: var(--color-surface);
+            color: var(--color-text);
+            font-family: inherit;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px var(--color-focus);
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .product-item {
+            background: #f5f5f5;
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 10px;
+        }
+
+        .product-item .form-group {
             margin-bottom: 8px;
         }
 
-        header p {
+        .product-item input, .product-item select {
+            padding: 8px;
+            font-size: 13px;
+        }
+
+        .btn-remove {
+            background: #f5f5f5;
+            border: 1px solid var(--color-error);
+            color: var(--color-error);
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn-remove:hover {
+            background: rgba(192, 21, 47, 0.1);
+        }
+
+        button.btn-add {
+            background: var(--color-primary);
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: 500;
+            transition: all 0.2s;
+            margin-top: 8px;
+        }
+
+        button.btn-add:hover {
+            background: var(--color-primary-hover);
+        }
+
+        .btn-calculate {
+            background: var(--color-primary);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 6px;
             font-size: 14px;
-            opacity: 0.9;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-bottom: 12px;
+            transition: all 0.2s;
         }
 
-        main {
-            flex: 1;
-            padding: 16px;
-            overflow-y: auto;
+        .btn-calculate:hover {
+            background: var(--color-primary-hover);
         }
 
-        .screen {
-            display: none;
+        .btn-calculate:active {
+            background: var(--color-primary-active);
         }
 
-        .screen.active {
-            display: block;
+        .history-item {
+            background: #f9f9f9;
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .history-item:hover {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .history-time {
+            font-size: 11px;
+            color: var(--color-text-secondary);
+            margin-bottom: 4px;
+        }
+
+        .history-customer {
+            font-size: 12px;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .history-total {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--color-primary);
+        }
+
+        .history-detail {
+            font-size: 11px;
+            color: var(--color-text-secondary);
+            margin-top: 4px;
+        }
+
+        .btn-delete {
+            background: rgba(192, 21, 47, 0.1);
+            color: var(--color-error);
+            border: 1px solid var(--color-error);
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 10px;
+            cursor: pointer;
+            margin-top: 8px;
+            font-weight: 500;
+            width: 100%;
+        }
+
+        .btn-delete:hover {
+            background: rgba(192, 21, 47, 0.2);
         }
 
         .tabs {
             display: flex;
             gap: 8px;
             margin-bottom: 16px;
-            border-bottom: 2px solid var(--border-color);
+            border-bottom: 2px solid var(--color-border);
         }
 
         .tab-btn {
-            padding: 12px 16px;
-            border: none;
             background: none;
-            cursor: pointer;
-            font-size: 14px;
+            border: none;
+            padding: 10px 16px;
+            font-size: 13px;
             font-weight: 500;
-            color: #6B7280;
-            border-bottom: 3px solid transparent;
-            transition: all 0.3s ease;
+            cursor: pointer;
+            color: var(--color-text-secondary);
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+            margin-bottom: -2px;
         }
 
         .tab-btn.active {
-            color: var(--primary-color);
-            border-bottom-color: var(--primary-color);
+            color: var(--color-primary);
+            border-bottom-color: var(--color-primary);
         }
 
-        .search-box {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 16px;
+        .tab-content {
+            display: none;
         }
 
-        .search-box input {
-            flex: 1;
-            padding: 12px 14px;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            font-size: 14px;
-        }
-
-        .search-box button {
-            padding: 12px 24px;
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: background-color 0.3s ease;
-        }
-
-        .search-box button:hover {
-            background-color: var(--primary-hover);
-        }
-
-        .filter-container {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 16px;
-            padding: 12px;
-            background-color: var(--light-bg);
-            border-radius: 6px;
-        }
-
-        .filter-container input[type="checkbox"] {
-            width: 20px;
-            height: 20px;
-            cursor: pointer;
-        }
-
-        .filter-container label {
-            cursor: pointer;
-            font-size: 14px;
-        }
-
-        .customer-card {
-            background-color: var(--bg-color);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 16px;
-            margin-bottom: 12px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .customer-card:hover {
-            box-shadow: 0 4px 12px rgba(0, 102, 204, 0.15);
-            transform: translateY(-2px);
-        }
-
-        .customer-card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-        }
-
-        .customer-name {
-            font-size: 18px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .vip-badge {
-            color: var(--vip-color);
-            font-size: 18px;
-        }
-
-        .visit-count {
-            font-size: 12px;
-            color: #6B7280;
-            background-color: var(--light-bg);
-            padding: 4px 8px;
-            border-radius: 4px;
-        }
-
-        .customer-info {
-            font-size: 13px;
-            color: #6B7280;
-            margin: 4px 0;
-        }
-
-        .button-group {
-            display: flex;
-            gap: 8px;
-            margin-top: 8px;
-        }
-
-        .btn {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 6px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            min-height: 48px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .btn-primary {
-            background-color: var(--primary-color);
-            color: white;
-            flex: 1;
-        }
-
-        .btn-primary:hover {
-            background-color: var(--primary-hover);
-        }
-
-        .btn-secondary {
-            background-color: var(--light-bg);
-            color: var(--text-color);
-            flex: 1;
-        }
-
-        .btn-secondary:hover {
-            background-color: #D1D5DB;
-        }
-
-        .btn-danger {
-            background-color: var(--error-color);
-            color: white;
-            flex: 0.5;
-        }
-
-        .btn-danger:hover {
-            background-color: #991B1B;
-        }
-
-        .btn-success {
-            background-color: var(--success-color);
-            color: white;
-            width: 100%;
-        }
-
-        .btn-success:hover {
-            background-color: #059669;
-        }
-
-        .btn-large {
-            width: 100%;
-            padding: 16px;
-            font-size: 16px;
-            margin-bottom: 12px;
-        }
-
-        .form-group {
-            margin-bottom: 16px;
-        }
-
-        .form-group label {
+        .tab-content.active {
             display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            font-size: 14px;
         }
 
-        .form-group input,
-        .form-group textarea,
-        .form-group select {
-            width: 100%;
-            padding: 12px 14px;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            font-size: 14px;
-            font-family: inherit;
-        }
-
-        .form-group textarea {
-            resize: vertical;
-            min-height: 80px;
-        }
-
-        .form-group input:focus,
-        .form-group textarea:focus,
-        .form-group select:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
-        }
-
-        .required {
-            color: var(--error-color);
-        }
-
-        .purchase-item {
-            background-color: var(--light-bg);
-            border-radius: 6px;
-            padding: 12px;
-            margin-bottom: 12px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .purchase-item:hover {
-            background-color: #D1D5DB;
-        }
-
-        .purchase-header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
-        }
-
-        .purchase-date {
-            font-weight: 600;
-            color: var(--text-color);
-        }
-
-        .purchase-amount {
-            font-weight: 600;
-            color: var(--primary-color);
-        }
-
-        .purchase-product {
-            font-size: 13px;
-            color: #6B7280;
-            margin-bottom: 4px;
-        }
-
-        .purchase-photos {
-            font-size: 12px;
-            color: var(--primary-color);
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .gallery-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-            gap: 8px;
-            margin-bottom: 16px;
-        }
-
-        .gallery-item {
-            position: relative;
-            padding-bottom: 100%;
-            overflow: hidden;
-            border-radius: 6px;
-            cursor: pointer;
-            background-color: var(--light-bg);
-        }
-
-        .gallery-item img {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .gallery-item-counter {
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            background-color: rgba(0, 0, 0, 0.7);
-            color: white;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        .lightbox {
+        .modal {
             display: none;
             position: fixed;
             top: 0;
             left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(0, 0, 0, 0.95);
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
             z-index: 1000;
-            padding: 16px;
             overflow-y: auto;
         }
 
-        .lightbox.active {
+        .modal.active {
             display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
+            align-items: flex-end;
         }
 
-        .lightbox-content {
-            max-width: 90vw;
+        .modal-content {
+            background: var(--color-surface);
+            width: 100%;
             max-height: 90vh;
-            text-align: center;
+            border-radius: 12px 12px 0 0;
+            padding: 20px;
+            overflow-y: auto;
         }
 
-        .lightbox-image {
-            max-width: 100%;
-            max-height: 70vh;
-            object-fit: contain;
-            margin-bottom: 16px;
-            border-radius: 8px;
-        }
-
-        .lightbox-info {
-            color: white;
-            font-size: 14px;
-            margin-bottom: 16px;
-        }
-
-        .lightbox-close {
-            color: white;
-            font-size: 32px;
-            position: absolute;
-            top: 16px;
-            right: 16px;
-            cursor: pointer;
-            background: none;
+        .modal-close {
+            background: var(--color-border);
             border: none;
+            padding: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            width: 100%;
+            margin-top: 12px;
+        }
+
+        .detail-section {
+            background: #f5f5f5;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 12px;
+        }
+
+        .detail-section h3 {
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--color-primary);
+        }
+
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            margin-bottom: 6px;
+            padding-bottom: 6px;
+            border-bottom: 1px dotted var(--color-border);
+        }
+
+        .detail-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
         }
 
         .empty-state {
             text-align: center;
-            padding: 40px 16px;
-            color: #6B7280;
+            padding: 24px 12px;
+            color: var(--color-text-secondary);
         }
 
         .empty-state-icon {
-            font-size: 48px;
-            margin-bottom: 16px;
+            font-size: 32px;
+            margin-bottom: 8px;
         }
 
-        .back-button {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 0;
-            background: none;
-            border: none;
-            color: var(--primary-color);
-            cursor: pointer;
-            font-weight: 600;
-            margin-bottom: 16px;
-        }
-
-        .back-button:hover {
-            color: var(--primary-hover);
-        }
-
-        .detail-header {
-            background-color: var(--light-bg);
-            border-radius: 8px;
-            padding: 16px;
-            margin-bottom: 16px;
-        }
-
-        .detail-header h2 {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 12px;
-            font-size: 20px;
-        }
-
-        .detail-info {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
+        .empty-state-text {
             font-size: 13px;
         }
 
-        .detail-info-item {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .detail-info-label {
-            color: #6B7280;
-            font-weight: 600;
-            margin-bottom: 4px;
-        }
-
-        .detail-info-value {
-            color: var(--text-color);
-            font-weight: 600;
-        }
-
-        .section-title {
-            font-size: 16px;
-            font-weight: 600;
-            margin-top: 24px;
-            margin-bottom: 12px;
-            color: var(--text-color);
-        }
-
-        .alert {
-            padding: 12px 16px;
-            border-radius: 6px;
-            margin-bottom: 16px;
-            font-size: 14px;
-        }
-
-        .alert-success {
-            background-color: #D1FAE5;
-            color: #065F46;
-            border: 1px solid #A7F3D0;
-        }
-
-        .alert-error {
-            background-color: #FEE2E2;
-            color: #7F1D1D;
-            border: 1px solid #FECACA;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 20px;
-            color: #6B7280;
-        }
-
-        .spinner {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid var(--light-bg);
-            border-top: 3px solid var(--primary-color);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .date-input-group {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-        }
-
-        .date-input-group input {
-            width: 100%;
-        }
-
-        .checkbox-group {
-            display: flex;
-            align-items: center;
-            gap: 12px;
+        .calculation-summary {
+            background: linear-gradient(135deg, rgba(50, 184, 198, 0.05), rgba(50, 184, 198, 0.02));
+            border-left: 4px solid var(--color-primary);
             padding: 12px;
-            background-color: var(--light-bg);
-            border-radius: 6px;
-            margin-bottom: 16px;
+            border-radius: 4px;
+            margin-top: 12px;
         }
 
-        .checkbox-group input[type="checkbox"] {
-            width: 20px;
-            height: 20px;
-            cursor: pointer;
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            margin-bottom: 6px;
+            padding-bottom: 6px;
+            border-bottom: 1px dotted var(--color-border);
         }
 
-        .checkbox-group label {
-            cursor: pointer;
-            flex: 1;
-            margin: 0;
+        .summary-row:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
         }
 
-        @media (max-width: 480px) {
-            .detail-info {
-                grid-template-columns: 1fr;
-            }
-            
-            header h1 {
-                font-size: 20px;
-            }
+        .summary-label {
+            color: var(--color-text-secondary);
+        }
+
+        .summary-value {
+            font-weight: 600;
+            color: var(--color-text);
+        }
+
+        .fee-detail {
+            font-size: 11px;
+            color: var(--color-text-secondary);
+            margin-left: 12px;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>📱 顧客管理＆写真</h1>
-            <p>小売店向け顧客情報＆購入写真アプリ</p>
-        </header>
+    <div id="passwordOverlay" class="password-overlay">
+        <div class="password-container">
+            <h2>パスワードを入力</h2>
+            <input type="password" id="passwordInput" placeholder="パスワード番号">
+            <button onclick="checkPassword()">ログイン</button>
+            <div id="passwordError" class="password-error">パスワードが違います</div>
+        </div>
+    </div>
 
-        <main>
-            <!-- ホーム画面（顧客一覧） -->
-            <div id="homeScreen" class="screen active">
-                <div class="tabs">
-                    <button class="tab-btn active" onclick="switchTab('home')">📋 顧客一覧</button>
-                    <button class="tab-btn" onclick="switchTab('search')">🔍 検索</button>
-                    <button class="tab-btn" onclick="switchTab('vip')">⭐ VIP</button>
-                </div>
+    <div class="main-content">
+        <div class="container">
+            <header>
+                <h1>分割手数料計算アプリ</h1>
+                <p class="subtitle">商品計算 × 支払い手数料</p>
+            </header>
 
-                <div class="search-box">
-                    <input type="text" id="homeSearch" placeholder="顧客名で検索..." />
-                    <button onclick="searchCustomers()">検索</button>
-                </div>
-
-                <div class="form-group">
-                    <label>校名フィルター</label>
-                    <select id="schoolFilter" onchange="applyFilters()">
-                        <option value="">すべての校</option>
-                        <option value="名古屋20">名古屋20</option>
-                        <option value="静岡15">静岡15</option>
-                        <option value="浜松17">浜松17</option>
-                        <option value="豊橋18">豊橋18</option>
-                        <option value="渋谷20">渋谷20</option>
-                        <option value="池袋21">池袋21</option>
-                        <option value="錦糸町22">錦糸町22</option>
-                        <option value="蒲田23">蒲田23</option>
-                        <option value="町田24">町田24</option>
-                        <option value="吉祥寺25">吉祥寺25</option>
-                        <option value="立川26">立川26</option>
-                        <option value="八王子27">八王子27</option>
-                        <option value="本厚木28">本厚木28</option>
-                        <option value="新宿29">新宿29</option>
-                        <option value="横浜30">横浜30</option>
-                        <option value="上大岡31">上大岡31</option>
-                        <option value="藤沢32">藤沢32</option>
-                        <option value="横須賀33">横須賀33</option>
-                        <option value="船橋34">船橋34</option>
-                        <option value="千葉35">千葉35</option>
-                        <option value="平塚37">平塚37</option>
-                        <option value="大宮40">大宮40</option>
-                        <option value="川越44">川越44</option>
-                        <option value="所沢46">所沢46</option>
-                        <option value="柏63">柏63</option>
-                        <option value="溝の口67">溝の口67</option>
-                        <option value="武蔵小杉68">武蔵小杉68</option>
-                        <option value="本部90">本部90</option>
-                    </select>
-                </div>
-
-                <div class="filter-container">
-                    <input type="checkbox" id="vipFilter" onchange="applyFilters()" />
-                    <label for="vipFilter">VIP顧客のみ表示</label>
-                </div>
-
-                <div class="filter-container">
-                    <input type="checkbox" id="tsumugiFilter" onchange="applyFilters()" />
-                    <label for="tsumugiFilter">紬好きのみ表示</label>
-                </div>
-
-                <div id="customerList"></div>
-
-                <div class="button-group" style="flex-direction: column; gap: 8px;">
-                    <button class="btn btn-primary btn-large" onclick="showScreen('newCustomerScreen')">
-                        ➕ 新規顧客登録
-                    </button>
-                    <button class="btn btn-secondary btn-large" onclick="showScreen('toolsScreen')">
-                        🛠️ ツール＆設定
-                    </button>
-                </div>
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('calculator')">計算</button>
+                <button class="tab-btn" onclick="switchTab('history')">履歴</button>
+                <button class="tab-btn" onclick="switchTab('preset')">リスト管理</button>
             </div>
 
-            <!-- 新規顧客登録フォーム -->
-            <div id="newCustomerScreen" class="screen">
-                <button class="back-button" onclick="showScreen('homeScreen')">← 戻る</button>
-                <h2>新規顧客登録</h2>
-
-                <div class="form-group">
-                    <label>顧客名 <span class="required">*</span></label>
-                    <input type="text" id="newCustomerName" placeholder="例：田中太郎" />
-                </div>
-
-                <div class="form-group">
-                    <label>電話番号</label>
-                    <input type="tel" id="newCustomerPhone" placeholder="例：09012345678" />
-                </div>
-
-                <div class="form-group">
-                    <label>メールアドレス</label>
-                    <input type="email" id="newCustomerEmail" placeholder="例：tanaka@example.com" />
-                </div>
-
-                <div class="form-group">
-                    <label>校名</label>
-                    <select id="newCustomerSchool">
-                        <option value="">選択してください</option>
-                        <option value="名古屋20">名古屋20</option>
-                        <option value="静岡15">静岡15</option>
-                        <option value="浜松17">浜松17</option>
-                        <option value="豊橋18">豊橋18</option>
-                        <option value="渋谷20">渋谷20</option>
-                        <option value="池袋21">池袋21</option>
-                        <option value="錦糸町22">錦糸町22</option>
-                        <option value="蒲田23">蒲田23</option>
-                        <option value="町田24">町田24</option>
-                        <option value="吉祥寺25">吉祥寺25</option>
-                        <option value="立川26">立川26</option>
-                        <option value="八王子27">八王子27</option>
-                        <option value="本厚木28">本厚木28</option>
-                        <option value="新宿29">新宿29</option>
-                        <option value="横浜30">横浜30</option>
-                        <option value="上大岡31">上大岡31</option>
-                        <option value="藤沢32">藤沢32</option>
-                        <option value="横須賀33">横須賀33</option>
-                        <option value="船橋34">船橋34</option>
-                        <option value="千葉35">千葉35</option>
-                        <option value="平塚37">平塚37</option>
-                        <option value="大宮40">大宮40</option>
-                        <option value="川越44">川越44</option>
-                        <option value="所沢46">所沢46</option>
-                        <option value="柏63">柏63</option>
-                        <option value="溝の口67">溝の口67</option>
-                        <option value="武蔵小杉68">武蔵小杉68</option>
-                        <option value="本部90">本部90</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label>所属</label>
-                    <select id="newCustomerAffiliation">
-                        <option value="">選択してください</option>
-                        <option value="学院">学院</option>
-                        <option value="しゅう美会">しゅう美会</option>
-                        <option value="講師">講師</option>
-                        <option value="従業員">従業員</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label>修科（分類） <span class="required">*</span></label>
-                    <div style="display: flex; gap: 8px; margin-bottom: 8px;">
-                        <select id="newCustomerCategory" style="flex: 1;">
-                            <option value="">選択してください</option>
-                            <option value="専攻科">専攻科</option>
-                            <option value="師範科">師範科</option>
-                            <option value="経営師範科">経営師範科</option>
-                            <option value="研究科">研究科</option>
-                            <option value="研究専科">研究専科</option>
-                            <option value="教養科">教養科</option>
-                            <option value="学･副オプ">学･副オプ</option>
-                            <option value="主任オプ">主任オプ</option>
-                            <option value="講師養成">講師養成</option>
-                            <option value="着付師養成">着付師養成</option>
-                            <option value="きつけ舞">きつけ舞</option>
-                            <option value="プロ科">プロ科</option>
-                            <option value="和裁">和裁</option>
-                            <option value="悠遊講座">悠遊講座</option>
-                            <option value="地唄舞">地唄舞</option>
-                            <option value="ヘアメイク">ヘアメイク</option>
-                            <option value="振袖帯結び">振袖帯結び</option>
-                            <option value="技術普及部">技術普及部</option>
-                            <option value="プロ着付養成">プロ着付養成</option>
-                        </select>
-                        <button class="btn btn-secondary" style="width: auto; padding: 8px 12px;" onclick="addCustomCategory()">+ 追加</button>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>その他（メモ）</label>
-                    <textarea id="newCustomerMemo" placeholder="メモを入力..."></textarea>
-                </div>
-
-                <div class="checkbox-group">
-                    <input type="checkbox" id="newCustomerVIP" />
-                    <label for="newCustomerVIP">この顧客をVIPに設定</label>
-                </div>
-
-                <div class="button-group">
-                    <button class="btn btn-primary" onclick="saveCustomer()">✅ 登録する</button>
-                    <button class="btn btn-secondary" onclick="showScreen('homeScreen')">✖️ キャンセル</button>
-                </div>
-            </div>
-
-            <!-- 顧客詳細画面 -->
-            <div id="customerDetailScreen" class="screen">
-                <button class="back-button" onclick="showScreen('homeScreen')">← 戻る</button>
-
-                <div class="detail-header">
-                    <h2 id="detailCustomerName"></h2>
-                    <div class="detail-info">
-                        <div class="detail-info-item">
-                            <div class="detail-info-label">📞 電話</div>
-                            <div class="detail-info-value" id="detailCustomerPhone"></div>
-                        </div>
-                        <div class="detail-info-item">
-                            <div class="detail-info-label">📧 メール</div>
-                            <div class="detail-info-value" id="detailCustomerEmail"></div>
-                        </div>
-                        <div class="detail-info-item">
-                            <div class="detail-info-label">校名</div>
-                            <div class="detail-info-value" id="detailCustomerSchool"></div>
-                        </div>
-                        <div class="detail-info-item">
-                            <div class="detail-info-label">所属</div>
-                            <div class="detail-info-value" id="detailCustomerAffiliation"></div>
-                        </div>
-                        <div class="detail-info-item">
-                            <div class="detail-info-label">修科</div>
-                            <div class="detail-info-value" id="detailCustomerCategory"></div>
-                        </div>
-                        <div class="detail-info-item">
-                            <div class="detail-info-label">来店回数</div>
-                            <div class="detail-info-value" id="detailVisitCount"></div>
-                        </div>
-                        <div class="detail-info-item">
-                            <div class="detail-info-label">最終来店</div>
-                            <div class="detail-info-value" id="detailLastVisit"></div>
-                        </div>
-                        <div class="detail-info-item">
-                            <div class="detail-info-label">登録日</div>
-                            <div class="detail-info-value" id="detailCreatedDate"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="button-group">
-                    <button class="btn btn-secondary" onclick="editCustomer()">✏️ 編集</button>
-                    <button class="btn btn-danger" onclick="deleteCustomerConfirm()">🗑️ 削除</button>
-                </div>
-
-                <div id="editCustomerForm" style="display: none; margin-top: 16px;">
-                    <h3>顧客情報編集</h3>
+            <!-- 計算タブ -->
+            <div id="calculator" class="tab-content active">
+                <section>
+                    <h2>基本情報</h2>
                     <div class="form-group">
-                        <label>顧客名 <span class="required">*</span></label>
-                        <input type="text" id="editCustomerName" />
-                    </div>
-                    <div class="form-group">
-                        <label>電話番号</label>
-                        <input type="tel" id="editCustomerPhone" />
-                    </div>
-                    <div class="form-group">
-                        <label>メールアドレス</label>
-                        <input type="email" id="editCustomerEmail" />
-                    </div>
-                    <div class="form-group">
-                        <label>校名</label>
-                        <select id="editCustomerSchool">
-                            <option value="">選択してください</option>
-                            <option value="名古屋20">名古屋20</option>
-                            <option value="静岡15">静岡15</option>
-                            <option value="浜松17">浜松17</option>
-                            <option value="豊橋18">豊橋18</option>
-                            <option value="渋谷20">渋谷20</option>
-                            <option value="池袋21">池袋21</option>
-                            <option value="錦糸町22">錦糸町22</option>
-                            <option value="蒲田23">蒲田23</option>
-                            <option value="町田24">町田24</option>
-                            <option value="吉祥寺25">吉祥寺25</option>
-                            <option value="立川26">立川26</option>
-                            <option value="八王子27">八王子27</option>
-                            <option value="本厚木28">本厚木28</option>
-                            <option value="新宿29">新宿29</option>
-                            <option value="横浜30">横浜30</option>
-                            <option value="上大岡31">上大岡31</option>
-                            <option value="藤沢32">藤沢32</option>
-                            <option value="横須賀33">横須賀33</option>
-                            <option value="船橋34">船橋34</option>
-                            <option value="千葉35">千葉35</option>
-                            <option value="平塚37">平塚37</option>
-                            <option value="大宮40">大宮40</option>
-                            <option value="川越44">川越44</option>
-                            <option value="所沢46">所沢46</option>
-                            <option value="柏63">柏63</option>
-                            <option value="溝の口67">溝の口67</option>
-                            <option value="武蔵小杉68">武蔵小杉68</option>
-                            <option value="本部90">本部90</option>
+                        <label>顧客種別</label>
+                        <select id="customerType" onchange="updateCalculation()">
+                            <option value="student">修科生</option>
+                            <option value="member">しゅう美会生</option>
+                            <option value="instructor">講師</option>
                         </select>
                     </div>
-                    <div class="form-group">
-                        <label>所属</label>
-                        <select id="editCustomerAffiliation">
-                            <option value="">選択してください</option>
-                            <option value="学院">学院</option>
-                            <option value="しゅう美会">しゅう美会</option>
-                            <option value="講師">講師</option>
-                            <option value="従業員">従業員</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>修科（分類）</label>
-                        <select id="editCustomerCategory">
-                            <option value="">選択してください</option>
-                            <option value="専攻科">専攻科</option>
-                            <option value="師範科">師範科</option>
-                            <option value="経営師範科">経営師範科</option>
-                            <option value="研究科">研究科</option>
-                            <option value="研究専科">研究専科</option>
-                            <option value="教養科">教養科</option>
-                            <option value="学･副オプ">学･副オプ</option>
-                            <option value="主任オプ">主任オプ</option>
-                            <option value="講師養成">講師養成</option>
-                            <option value="着付師養成">着付師養成</option>
-                            <option value="きつけ舞">きつけ舞</option>
-                            <option value="プロ科">プロ科</option>
-                            <option value="和裁">和裁</option>
-                            <option value="悠遊講座">悠遊講座</option>
-                            <option value="地唄舞">地唄舞</option>
-                            <option value="ヘアメイク">ヘアメイク</option>
-                            <option value="振袖帯結び">振袖帯結び</option>
-                            <option value="技術普及部">技術普及部</option>
-                            <option value="プロ着付養成">プロ着付養成</option>
-                        </select>
-                    </div>
-                    <div class="checkbox-group">
-                        <input type="checkbox" id="editCustomerTsumigi" />
-                        <label for="editCustomerTsumigi">紬好き</label>
-                    </div>
-                    <div class="checkbox-group">
-                        <input type="checkbox" id="editCustomerVIP" />
-                        <label for="editCustomerVIP">VIP</label>
-                    </div>
-                    <div class="button-group">
-                        <button class="btn btn-primary" onclick="saveCustomerEdit()">✅ 保存</button>
-                        <button class="btn btn-secondary" onclick="cancelEditCustomer()">✖️ キャンセル</button>
-                    </div>
-                </div>
+                </section>
 
-                <div class="section-title">📝 購入履歴</div>
-                <div id="purchaseList"></div>
+                <section>
+                    <h2>商品情報</h2>
+                    <div id="productsList"></div>
+                    <button class="btn-add" onclick="addProduct(); return false;">+ 商品を追加</button>
+                </section>
 
-                <button class="btn btn-primary btn-large" onclick="showScreen('newPurchaseScreen')">
-                    ➕ 新規購入を記録
-                </button>
+                <section id="cardSelectionsSection"></section>
+
+                <button class="btn-calculate" onclick="saveToHistory()">計算結果を保存</button>
+
+                <section id="resultsSection" style="display: none;">
+                    <h2>計算結果</h2>
+                    <div class="calculation-summary" id="summaryDetails"></div>
+                </section>
             </div>
 
-            <!-- 新規購入登録フォーム -->
-            <div id="newPurchaseScreen" class="screen">
-                <button class="back-button" onclick="showScreen('customerDetailScreen')">← 戻る</button>
-                <h2>新規購入登録</h2>
-
-                <div class="form-group">
-                    <label>購入日 <span class="required">*</span></label>
-                    <input type="date" id="newPurchaseDate" />
-                </div>
-
-                <div class="form-group">
-                    <label>金額 <span class="required">*</span></label>
-                    <input type="number" id="newPurchaseAmount" placeholder="例：15000" />
-                </div>
-
-                <div class="form-group">
-                    <label>商品説明 <span class="required">*</span></label>
-                    <textarea id="newPurchaseProduct" placeholder="商品の説明を入力..."></textarea>
-                </div>
-
-                <div class="section-title">ローン情報（オプション）</div>
-
-                <div class="form-group">
-                    <label>ローン残高</label>
-                    <input type="number" id="newPurchaseLoanBalance" placeholder="例：0" />
-                </div>
-
-                <div class="form-group">
-                    <label>残り支払い回数</label>
-                    <input type="number" id="newPurchasePaymentCount" placeholder="例：0" />
-                </div>
-
-                <div class="form-group">
-                    <label>最終支払い月</label>
-                    <input type="month" id="newPurchaseFinalPayment" />
-                </div>
-
-                <div class="section-title">展示会情報（オプション）</div>
-
-                <div class="form-group">
-                    <label>西暦</label>
-                    <input type="number" id="newPurchaseYear" placeholder="例：2026" />
-                </div>
-
-                <div class="form-group">
-                    <label>展示会種別</label>
-                    <select id="newPurchaseExhibition">
-                        <option value="">選択してください</option>
-                        <option value="おしゃれ博">おしゃれ博</option>
-                        <option value="新春展">新春展</option>
-                        <option value="華比べ">華比べ</option>
-                        <option value="学校祭">学校祭</option>
-                        <option value="特別展">特別展</option>
-                        <option value="その他">その他</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label>その他の展示会（「その他」選択時）</label>
-                    <input type="text" id="newPurchaseExhibitionOther" placeholder="展示会名を入力..." />
-                </div>
-
-                <div class="section-title">写真アップロード</div>
-
-                <div class="form-group">
-                    <label>商品購入伝票写真</label>
-                    <input type="file" id="newPurchasePhoto" accept="image/*" multiple onchange="previewPhotos()" />
-                </div>
-
-                <div class="gallery-container" id="photoPreview"></div>
-
-                <div class="button-group">
-                    <button class="btn btn-primary" onclick="savePurchase()">✅ 登録する</button>
-                    <button class="btn btn-secondary" onclick="showScreen('customerDetailScreen')">✖️ キャンセル</button>
-                </div>
+            <!-- 履歴タブ -->
+            <div id="history" class="tab-content">
+                <section id="historySection"></section>
             </div>
 
-            <!-- 写真ギャラリー画面 -->
-            <div id="photoGalleryScreen" class="screen">
-                <button class="back-button" onclick="showScreen('customerDetailScreen')">← 戻る</button>
-                <h2 id="galleryTitle">写真ギャラリー</h2>
-
-                <div class="gallery-container" id="fullGallery"></div>
+            <!-- リスト管理タブ -->
+            <div id="preset" class="tab-content">
+                <section>
+                    <h2>カード種類管理</h2>
+                    <div id="cardTypesTable"></div>
+                    <button class="btn-add" onclick="addCardType(); return false;">+ カード種類を追加</button>
+                </section>
+                <section>
+                    <h2>カード手数料管理</h2>
+                    <div id="cardPaymentTable"></div>
+                </section>
+                <section>
+                    <h2>スキップ手数料管理</h2>
+                    <div id="skipFeeTable"></div>
+                </section>
+                <section>
+                    <h2>ガード管理</h2>
+                    <div id="guardList"></div>
+                    <button class="btn-add" onclick="addPresetItem('guard'); return false;">+ ガードを追加</button>
+                </section>
+                <section>
+                    <h2>裏物管理</h2>
+                    <div id="liningList"></div>
+                    <button class="btn-add" onclick="addPresetItem('lining'); return false;">+ 裏物を追加</button>
+                </section>
+                <section>
+                    <h2>仕立管理</h2>
+                    <div id="tailorList"></div>
+                    <button class="btn-add" onclick="addPresetItem('tailor'); return false;">+ 仕立を追加</button>
+                </section>
+                <section>
+                    <h2>その他管理</h2>
+                    <div id="otherList"></div>
+                    <button class="btn-add" onclick="addPresetItem('other'); return false;">+ その他を追加</button>
+                </section>
+                <section>
+                    <h2>その他カテゴリー割引設定</h2>
+                    <div id="categoryDiscountList"></div>
+                </section>
             </div>
 
-            <!-- ライトボックス -->
-            <div id="lightbox" class="lightbox">
-                <button class="lightbox-close" onclick="closeLightbox()">×</button>
-                <div class="lightbox-content">
-                    <img id="lightboxImage" class="lightbox-image" src="" />
-                    <div class="lightbox-info" id="lightboxInfo"></div>
-                    <div style="display: flex; gap: 8px; justify-content: center;">
-                        <button class="btn btn-secondary" onclick="previousPhoto()">◀️ 前</button>
-                        <button class="btn btn-secondary" onclick="nextPhoto()">次 ▶️</button>
-                    </div>
-                </div>
+            <div class="modal" id="detailModal">
+                <div class="modal-content" id="detailContent"></div>
             </div>
-
-            <!-- V2.1 ツール画面 -->
-            <div id="toolsScreen" class="screen">
-                <button class="back-button" onclick="showScreen('homeScreen')">← 戻る</button>
-                <h2>🛠️ ツール＆設定</h2>
-
-                <div style="margin-top: 24px;">
-                    <h3 style="margin-bottom: 12px; font-size: 16px; font-weight: 600;">📥 データエクスポート</h3>
-                    <button class="btn btn-primary btn-large" onclick="exportCustomersToCSV()">
-                        📋 顧客データをCSVエクスポート
-                    </button>
-                    <button class="btn btn-primary btn-large" onclick="exportPurchasesToCSV()">
-                        📊 購入履歴をCSVエクスポート
-                    </button>
-                </div>
-
-                <div style="margin-top: 24px;">
-                    <h3 style="margin-bottom: 12px; font-size: 16px; font-weight: 600;">📤 データインポート</h3>
-                    <div class="form-group">
-                        <label>顧客データをCSVインポート</label>
-                        <input type="file" id="importCustomersFile" accept=".csv" />
-                        <button class="btn btn-secondary btn-large" onclick="importCustomersFromCSV()" style="margin-top: 8px;">
-                            ⬆️ 顧客データをインポート
-                        </button>
-                    </div>
-                    <div class="form-group">
-                        <label>購入履歴をCSVインポート</label>
-                        <input type="file" id="importPurchasesFile" accept=".csv" />
-                        <button class="btn btn-secondary btn-large" onclick="importPurchasesFromCSV()" style="margin-top: 8px;">
-                            ⬆️ 購入履歴をインポート
-                        </button>
-                    </div>
-                </div>
-
-                <div style="margin-top: 24px;">
-                    <h3 style="margin-bottom: 12px; font-size: 16px; font-weight: 600;">📈 統計情報</h3>
-                    <button class="btn btn-success btn-large" onclick="showStatistics()">
-                        📊 統計情報を表示
-                    </button>
-                </div>
-
-                <div style="margin-top: 24px; padding: 16px; background-color: var(--light-bg); border-radius: 8px;">
-                    <p style="font-size: 12px; color: #6B7280; margin: 0;">
-                        💡 ヒント: CSVファイルはExcelやGoogleスプレッドシートで開くことができます
-                    </p>
-                </div>
-            </div>
-        </main>
+        </div>
     </div>
 
     <script>
-        // データストレージ（ローカルストレージ）
-        const StorageKey = {
-            CUSTOMERS: 'customers',
-            PURCHASES: 'purchases',
-            PHOTOS: 'photos'
+        // グローバル変数の初期化
+        let cardTypes = [];
+        let categoryDiscounts = {};
+        let skipFeeRates = {};
+
+        // プリセットデータ
+        let presetData = {
+            guard: [
+                { id: 1, name: 'ガード（標準）', price: 3000 },
+                { id: 2, name: 'ガード（厚手）', price: 4000 },
+                { id: 3, name: 'ガード（特殊）', price: 5000 }
+            ],
+            lining: [
+                { id: 4, name: '裏物（標準）', price: 2000 },
+                { id: 5, name: '裏物（上質）', price: 3500 },
+                { id: 6, name: '裏物（特殊）', price: 4500 }
+            ],
+            tailor: [
+                { id: 7, name: '仕立（標準）', price: 15000 },
+                { id: 8, name: '仕立（高級）', price: 25000 },
+                { id: 9, name: '仕立（特殊）', price: 35000 }
+            ],
+            other: [
+                { id: 10, name: 'その他（¥5,000）', price: 5000 },
+                { id: 11, name: 'その他（¥10,000）', price: 10000 },
+                { id: 12, name: 'その他（¥15,000）', price: 15000 }
+            ]
         };
 
-        // 現在表示中の顧客ID
-        let currentCustomerId = null;
-        let currentPurchaseId = null;
-        let currentPhotoIndex = 0;
-        let currentPhotos = [];
+        let feeStructureData = {
+            jackx: [
+                { payments: 1, fee: 0 },
+                { payments: 3, fee: 0 },
+                { payments: 6, fee: 0 },
+                { payments: 10, fee: 0 },
+                { payments: 12, fee: 1.2 },
+                { payments: 15, fee: 3.0 },
+                { payments: 18, fee: 4.8 },
+                { payments: 20, fee: 6.0 },
+                { payments: 24, fee: 8.4 },
+                { payments: 30, fee: 12.0 },
+                { payments: 36, fee: 15.6 }
+            ],
+            kl: [
+                { payments: 1, fee: 0 },
+                { payments: 3, fee: 0 },
+                { payments: 6, fee: 0 },
+                { payments: 10, fee: 0 },
+                { payments: 12, fee: 1.0 },
+                { payments: 15, fee: 2.1 },
+                { payments: 18, fee: 3.1 },
+                { payments: 20, fee: 3.8 },
+                { payments: 24, fee: 5.2 },
+                { payments: 30, fee: 7.3 },
+                { payments: 36, fee: 9.4 }
+            ]
+        };
 
-        // 初期化
-        function init() {
-            if (!localStorage.getItem(StorageKey.CUSTOMERS)) {
-                localStorage.setItem(StorageKey.CUSTOMERS, JSON.stringify([]));
-                localStorage.setItem(StorageKey.PURCHASES, JSON.stringify([]));
-                localStorage.setItem(StorageKey.PHOTOS, JSON.stringify([]));
-                // サンプルデータを追加
-                addSampleData();
+        const categoryLabels = {
+            'kimono_awase': '着物(袷)',
+            'kimono_hitoe': '着物(単衣)',
+            'homongi_awase': '訪問着(袷)',
+            'homongi_hitoe': '訪問着(単衣)',
+            'tsukesage_awase': '付下げ(袷)',
+            'tsukesage_hitoe': '付下げ(単衣)',
+            'tsukesage_summer': '付下げ(夏物)',
+            'nagajuban_awase': '長襦袢(袷)',
+            'nagajuban_hitoe': '長襦袢(単衣)',
+            'coat_awase': 'コート(袷)',
+            'coat_hitoe': 'コート(単衣)',
+            'obi': '帯',
+            'small': '小物'
+        };
+
+        const categoryList = ['kimono_awase', 'kimono_hitoe', 'homongi_awase', 'homongi_hitoe', 'tsukesage_awase', 'tsukesage_hitoe', 'tsukesage_summer', 'nagajuban_awase', 'nagajuban_hitoe', 'coat_awase', 'coat_hitoe', 'obi', 'small'];
+
+        function formatDateJP(date) {
+            const d = new Date(date);
+            return d.getFullYear() + '年' + (d.getMonth() + 1) + '月' + d.getDate() + '日 ' + 
+                   ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2) + ':' + ('0' + d.getSeconds()).slice(-2);
+        }
+
+        function initPresetData() {
+            const saved = localStorage.getItem('presetData');
+            if (saved) presetData = JSON.parse(saved);
+            else savePresetData();
+
+            const savedFee = localStorage.getItem('feeStructureData');
+            if (savedFee) feeStructureData = JSON.parse(savedFee);
+            else saveFeeStructureData();
+
+            initCardTypes();
+            initCategoryDiscounts();
+            initProductDiscountRates();
+            initSkipFeeRates();
+            loadLastUpdateTimes();
+        }
+
+        function initCardTypes() {
+            const saved = localStorage.getItem('cardTypes');
+            if (saved) {
+                cardTypes = JSON.parse(saved);
+            } else {
+                cardTypes = [
+                    {
+                        id: 'jackx',
+                        name: 'ジャックスカード',
+                        payments: { 1: 0, 3: 0, 6: 0, 10: 0, 12: 1.2, 15: 3.0, 18: 4.8, 20: 6.0, 24: 8.4, 30: 12.0, 36: 15.6 },
+                        skip: { 0: 0, 1: 0.5, 2: 1.0, 3: 1.5, 4: 2.0, 5: 2.5, 6: 3.0 }
+                    },
+                    {
+                        id: 'kl',
+                        name: 'ショッピング・KL',
+                        payments: { 1: 0, 3: 0, 6: 0, 10: 0, 12: 1.0, 15: 2.1, 18: 3.1, 20: 3.8, 24: 5.2, 30: 7.3, 36: 9.4 },
+                        skip: { 0: 0, 1: 0.5, 2: 1.0, 3: 1.5, 4: 2.0, 5: 2.5, 6: 3.0 }
+                    }
+                ];
+                saveCardTypes();
             }
-            setDefaultDate();
-            renderCustomerList();
         }
 
-        // サンプルデータを追加
-        function addSampleData() {
-            const sampleCustomers = [
-                {
-                    id: 'C001',
-                    name: '田中太郎',
-                    phone: '09012345678',
-                    email: 'tanaka@example.com',
-                    category: '個人顧客',
-                    memo: '信頼できる常連顧客',
-                    vip: true,
-                    createdDate: '2026-01-01'
-                },
-                {
-                    id: 'C002',
-                    name: '田中花子',
-                    phone: '09087654321',
-                    email: 'hanako@example.com',
-                    category: '個人顧客',
-                    memo: '',
-                    vip: false,
-                    createdDate: '2026-01-10'
-                }
-            ];
-
-            const samplePurchases = [
-                {
-                    id: 'P001',
-                    customerId: 'C001',
-                    date: '2026-01-20',
-                    amount: 15000,
-                    product: 'iPhone 15 Pro ケース',
-                    loanBalance: 0,
-                    paymentCount: 0,
-                    finalPayment: '',
-                    timestamp: new Date().toISOString()
-                },
-                {
-                    id: 'P002',
-                    customerId: 'C001',
-                    date: '2026-01-15',
-                    amount: 8500,
-                    product: 'ワイヤレスイヤホン',
-                    loanBalance: 0,
-                    paymentCount: 0,
-                    finalPayment: '',
-                    timestamp: new Date().toISOString()
-                }
-            ];
-
-            localStorage.setItem(StorageKey.CUSTOMERS, JSON.stringify(sampleCustomers));
-            localStorage.setItem(StorageKey.PURCHASES, JSON.stringify(samplePurchases));
-        }
-
-        // デフォルト日付を本日に設定
-        function setDefaultDate() {
-            const today = new Date().toISOString().split('T')[0];
-            const dateInput = document.getElementById('newPurchaseDate');
-            if (dateInput) {
-                dateInput.value = today;
+        function initCategoryDiscounts() {
+            const saved = localStorage.getItem('categoryDiscounts');
+            if (saved) {
+                categoryDiscounts = JSON.parse(saved);
+            } else {
+                categoryDiscounts = {};
+                categoryList.forEach(cat => {
+                    categoryDiscounts[cat] = { student: 0, member: 0, instructor: 0 };
+                });
+                saveCategoryDiscounts();
             }
         }
 
-        // 画面切り替え
-        function showScreen(screenId) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(screenId).classList.add('active');
-            if (screenId === 'newPurchaseScreen') {
-                setDefaultDate();
+        function initSkipFeeRates() {
+            const saved = localStorage.getItem('skipFeeRates');
+            if (saved) {
+                skipFeeRates = JSON.parse(saved);
+            } else {
+                skipFeeRates = {};
+                cardTypes.forEach(card => {
+                    skipFeeRates[card.id] = { 0: 0, 1: 0.5, 2: 1.0, 3: 1.5, 4: 2.0, 5: 2.5, 6: 3.0 };
+                });
+                saveSkipFeeRates();
             }
         }
 
-        // タブ切り替え
-        function switchTab(tab) {
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            event.target.classList.add('active');
+        function saveCategoryDiscounts() {
+            localStorage.setItem('categoryDiscounts', JSON.stringify(categoryDiscounts));
         }
 
-        // 顧客リスト表示（自動ソート）
-        function renderCustomerList() {
-            const customers = JSON.parse(localStorage.getItem(StorageKey.CUSTOMERS)) || [];
-            const vipFilter = document.getElementById('vipFilter').checked;
-            const tsumugiFilter = document.getElementById('tsumugiFilter').checked;
-            const schoolFilter = document.getElementById('schoolFilter').value;
-            const searchTerm = document.getElementById('homeSearch').value.toLowerCase();
+        function saveCardTypes() {
+            localStorage.setItem('cardTypes', JSON.stringify(cardTypes));
+        }
 
-            let filtered = customers.filter(c => {
-                const matchesVIP = !vipFilter || c.vip;
-                const matchesTsumigi = !tsumugiFilter || c.tsumigi;
-                const matchesSchool = !schoolFilter || c.school === schoolFilter;
-                const matchesSearch = c.name.toLowerCase().includes(searchTerm) || 
-                                     c.phone.includes(searchTerm);
-                return matchesVIP && matchesTsumigi && matchesSchool && matchesSearch;
-            });
+        function savePresetData() {
+            localStorage.setItem('presetData', JSON.stringify(presetData));
+        }
 
-            // 校毎のあいうえお順にソート
-            filtered.sort((a, b) => {
-                if (a.school !== b.school) {
-                    return (a.school || '').localeCompare(b.school || '', 'ja');
+        function saveFeeStructureData() {
+            localStorage.setItem('feeStructureData', JSON.stringify(feeStructureData));
+        }
+
+        let lastUpdateTimes = {};
+
+        function saveLastUpdateTimes() {
+            localStorage.setItem('lastUpdateTimes', JSON.stringify(lastUpdateTimes));
+        }
+
+        function loadLastUpdateTimes() {
+            const saved = localStorage.getItem('lastUpdateTimes');
+            if (saved) lastUpdateTimes = JSON.parse(saved);
+        }
+
+        function updateLastUpdateTime(section) {
+            lastUpdateTimes[section] = new Date().toISOString();
+            saveLastUpdateTimes();
+            renderCategoryDiscountList();
+        }
+
+        function saveSkipFeeRates() {
+            localStorage.setItem('skipFeeRates', JSON.stringify(skipFeeRates));
+        }
+
+        let products = [];
+        let calculation = null;
+        let productDiscountRates = {};
+
+        function initProductDiscountRates() {
+            const saved = localStorage.getItem('productDiscountRates');
+            if (saved) {
+                productDiscountRates = JSON.parse(saved);
+            } else {
+                productDiscountRates = {};
+                saveProductDiscountRates();
+            }
+        }
+
+        function saveProductDiscountRates() {
+            localStorage.setItem('productDiscountRates', JSON.stringify(productDiscountRates));
+        }
+
+        function addProduct() {
+            const id = Date.now();
+            products.push({ id, category: 'kimono_awase', price: '' });
+            renderProducts();
+            updateCalculation();
+        }
+
+        function removeProduct(id) {
+            products = products.filter(p => p.id !== id);
+            renderProducts();
+            updateCalculation();
+        }
+
+        function updateProduct(id, field, value) {
+            const product = products.find(p => p.id === id);
+            if (product) {
+                product[field] = value;
+                updateCalculation();
+            }
+        }
+
+        function selectPreset(id, presetId) {
+            const product = products.find(p => p.id === id);
+            if (product && presetId) {
+                const preset = presetData[product.category].find(p => p.id == presetId);
+                if (preset) {
+                    product.price = preset.price;
+                    product.presetId = preset.id;
+                    updateCalculation();
                 }
-                return a.name.localeCompare(b.name, 'ja');
-            });
-
-            const listHtml = filtered.map(customer => {
-                const visitCount = getPurchaseCount(customer.id);
-                const lastVisit = getLastVisitDate(customer.id);
-
-                return `
-                    <div class="customer-card" onclick="viewCustomerDetail('${customer.id}')">
-                        <div class="customer-card-header">
-                            <div class="customer-name">
-                                ${customer.vip ? '<span class="vip-badge">⭐</span>' : ''}
-                                ${customer.tsumigi ? '<span style="font-size: 16px; margin-right: 4px;">🧵</span>' : ''}
-                                ${customer.name}
-                            </div>
-                            <span class="visit-count">来店 ${visitCount}回</span>
-                        </div>
-                        <div class="customer-info">📍 ${customer.school || '—'}</div>
-                        ${customer.phone ? `<div class="customer-info">📞 ${customer.phone}</div>` : ''}
-                        ${lastVisit ? `<div class="customer-info">最終来店: ${lastVisit}</div>` : ''}
-                        <div class="button-group">
-                            <button class="btn btn-primary" onclick="viewCustomerDetail('${customer.id}'); event.stopPropagation();">詳細</button>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-
-            document.getElementById('customerList').innerHTML = listHtml || 
-                '<div class="empty-state"><div class="empty-state-icon">📭</div>該当する顧客が登録されていません</div>';
+            }
         }
 
-        // フィルター適用
-        function applyFilters() {
-            renderCustomerList();
-        }
-
-        // 来店回数を取得
-        function getPurchaseCount(customerId) {
-            const purchases = JSON.parse(localStorage.getItem(StorageKey.PURCHASES)) || [];
-            return purchases.filter(p => p.customerId === customerId).length;
-        }
-
-        // 最終来店日を取得
-        function getLastVisitDate(customerId) {
-            const purchases = JSON.parse(localStorage.getItem(StorageKey.PURCHASES)) || [];
-            const customerPurchases = purchases.filter(p => p.customerId === customerId);
-            if (customerPurchases.length === 0) return null;
-            const dates = customerPurchases.map(p => new Date(p.date));
-            const latest = new Date(Math.max(...dates));
-            return latest.toLocaleDateString('ja-JP');
-        }
-
-        // 顧客を保存
-        function saveCustomer() {
-            const name = document.getElementById('newCustomerName').value;
-
-            if (!name) {
-                alert('顧客名は必須です');
+        function renderProducts() {
+            const container = document.getElementById('productsList');
+            if (products.length === 0) {
+                container.innerHTML = '<p style="color: var(--color-text-secondary); font-size: 12px; text-align: center; padding: 12px;">商品を追加してください</p>';
                 return;
             }
 
-            const customers = JSON.parse(localStorage.getItem(StorageKey.CUSTOMERS)) || [];
-            const newCustomer = {
-                id: 'C' + String(customers.length + 1).padStart(3, '0'),
-                name,
-                phone: document.getElementById('newCustomerPhone').value,
-                email: document.getElementById('newCustomerEmail').value,
-                school: document.getElementById('newCustomerSchool').value,
-                affiliation: document.getElementById('newCustomerAffiliation').value,
-                category: document.getElementById('newCustomerCategory').value,
-                memo: document.getElementById('newCustomerMemo').value,
-                vip: document.getElementById('newCustomerVIP').checked,
-                tsumigi: document.getElementById('newCustomerTsumigi')?.checked || false,
-                createdDate: new Date().toISOString().split('T')[0]
+            container.innerHTML = products.map(product => {
+                const isPresetCategory = ['guard', 'lining', 'tailor', 'other'].includes(product.category);
+                const presetOptions = isPresetCategory ? presetData[product.category] : [];
+
+                return `
+                    <div class="product-item">
+                        <div class="form-group">
+                            <label>カテゴリー</label>
+                            <select onchange="updateProduct(${product.id}, 'category', this.value); renderProducts(); updateCalculation()">
+                                <option value="kimono_awase" ${product.category === 'kimono_awase' ? 'selected' : ''}>着物(袷)</option>
+                                <option value="kimono_hitoe" ${product.category === 'kimono_hitoe' ? 'selected' : ''}>着物(単衣)</option>
+                                <option value="homongi_awase" ${product.category === 'homongi_awase' ? 'selected' : ''}>訪問着(袷)</option>
+                                <option value="homongi_hitoe" ${product.category === 'homongi_hitoe' ? 'selected' : ''}>訪問着(単衣)</option>
+                                <option value="tsukesage_awase" ${product.category === 'tsukesage_awase' ? 'selected' : ''}>付下げ(袷)</option>
+                                <option value="tsukesage_hitoe" ${product.category === 'tsukesage_hitoe' ? 'selected' : ''}>付下げ(単衣)</option>
+                                <option value="tsukesage_summer" ${product.category === 'tsukesage_summer' ? 'selected' : ''}>付下げ(夏物)</option>
+                                <option value="nagajuban_awase" ${product.category === 'nagajuban_awase' ? 'selected' : ''}>長襦袢(袷)</option>
+                                <option value="nagajuban_hitoe" ${product.category === 'nagajuban_hitoe' ? 'selected' : ''}>長襦袢(単衣)</option>
+                                <option value="coat_awase" ${product.category === 'coat_awase' ? 'selected' : ''}>コート(袷)</option>
+                                <option value="coat_hitoe" ${product.category === 'coat_hitoe' ? 'selected' : ''}>コート(単衣)</option>
+                                <option value="obi" ${product.category === 'obi' ? 'selected' : ''}>帯</option>
+                                <option value="small" ${product.category === 'small' ? 'selected' : ''}>小物</option>
+                                <option value="guard" ${product.category === 'guard' ? 'selected' : ''}>ガード</option>
+                                <option value="lining" ${product.category === 'lining' ? 'selected' : ''}>裏物</option>
+                                <option value="tailor" ${product.category === 'tailor' ? 'selected' : ''}>仕立</option>
+                                <option value="other" ${product.category === 'other' ? 'selected' : ''}>その他</option>
+                            </select>
+                        </div>
+                        ${isPresetCategory ? `
+                            <div class="form-group">
+                                <label>商品を選択</label>
+                                <select onchange="selectPreset(${product.id}, this.value); updateCalculation()">
+                                    <option value="">-- 選択してください --</option>
+                                    ${presetOptions.map(item => `
+                                        <option value="${item.id}" ${product.presetId === item.id ? 'selected' : ''}>${item.name} - ¥${item.price.toLocaleString('ja-JP')}</option>
+                                    `).join('')}
+                                </select>
+                            </div>
+                        ` : `
+                            <div class="form-group">
+                                <label>商品単価（円）</label>
+                                <input type="number" value="${product.price}" placeholder="0" onchange="updateProduct(${product.id}, 'price', this.value)" oninput="this.value = formatNumberInput(this.value); updateCalculation()">
+                            </div>
+                        `}
+                        <button class="btn-remove" onclick="removeProduct(${product.id})">削除</button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function formatNumberInput(value) {
+            return value.replace(/\D/g, '');
+        }
+
+        function formatNumber(num) {
+            return Math.round(num).toLocaleString('ja-JP');
+        }
+
+        function getCategoryDiscount(category, customerType) {
+            if (categoryDiscounts[category]) {
+                return categoryDiscounts[category][customerType] || 0;
+            }
+            return 0;
+        }
+
+        function updateCalculation() {
+            if (products.length === 0 || products.some(p => !p.price || isNaN(p.price))) {
+                document.getElementById('resultsSection').style.display = 'none';
+                return;
+            }
+
+            const customerType = document.getElementById('customerType').value;
+            const jackxPayments = parseInt(document.getElementById('jackxPayments').value) || 1;
+            const jackxSkip = parseInt(document.getElementById('jackxSkip').value) || 0;
+            const klPayments = parseInt(document.getElementById('klPayments').value) || 1;
+            const klSkip = parseInt(document.getElementById('klSkip').value) || 0;
+
+            let totalBeforeFee = 0;
+            let totalAfterDiscount = 0;
+            let discountTotal = 0;
+            let productDetails = [];
+
+            products.forEach(product => {
+                const price = parseFloat(product.price);
+                let discountRate = 0;
+
+                if (categoryList.includes(product.category)) {
+                    discountRate = getCategoryDiscount(product.category, customerType);
+                } else if ((product.category === 'tailor' || product.category === 'guard' || product.category === 'lining') && product.presetId) {
+                    discountRate = getProductDiscount(product.category, product.presetId, customerType);
+                }
+
+                const discountAmount = price * (discountRate / 100);
+                const priceAfterDiscount = price - discountAmount;
+
+                totalBeforeFee += price;
+                totalAfterDiscount += priceAfterDiscount;
+                discountTotal += discountAmount;
+
+                productDetails.push({
+                    id: product.id,
+                    category: product.category,
+                    price: price,
+                    discountRate: discountRate,
+                    discountAmount: discountAmount,
+                    priceAfterDiscount: priceAfterDiscount
+                });
+            });
+
+            const jackxCard = cardTypes.find(c => c.id === 'jackx');
+            const jackxFeeRate = jackxCard && jackxCard.payments[jackxPayments] !== undefined ? jackxCard.payments[jackxPayments] : 0;
+            const jackxSkipFeeRate = skipFeeRates['jackx'] && skipFeeRates['jackx'][jackxSkip] !== undefined ? skipFeeRates['jackx'][jackxSkip] : 0;
+            const jackxTotalFeeRate = jackxFeeRate + jackxSkipFeeRate;
+            const jackxFeeAmount = Math.floor(totalAfterDiscount * (jackxTotalFeeRate / 100));
+            const jackxFinal = totalAfterDiscount + jackxFeeAmount;
+            const jackxPerMonth = Math.floor(jackxFinal / jackxPayments * 100) / 100;
+
+            const klCard = cardTypes.find(c => c.id === 'kl');
+            const klFeeRate = klCard && klCard.payments[klPayments] !== undefined ? klCard.payments[klPayments] : 0;
+            const klSkipFeeRate = skipFeeRates['kl'] && skipFeeRates['kl'][klSkip] !== undefined ? skipFeeRates['kl'][klSkip] : 0;
+            const klTotalFeeRate = klFeeRate + klSkipFeeRate;
+            const klFeeAmount = Math.floor(totalAfterDiscount * (klTotalFeeRate / 100));
+            const klFinal = totalAfterDiscount + klFeeAmount;
+            const klPerMonth = Math.floor(klFinal / klPayments * 100) / 100;
+
+            calculation = {
+                customerType,
+                productDetails,
+                totalBeforeFee,
+                totalAfterDiscount,
+                discountTotal,
+                jackx: {
+                    payments: jackxPayments,
+                    skip: jackxSkip,
+                    feeRate: jackxFeeRate,
+                    skipFeeRate: jackxSkipFeeRate,
+                    totalFeeRate: jackxTotalFeeRate,
+                    feeAmount: jackxFeeAmount,
+                    final: jackxFinal,
+                    perMonth: jackxPerMonth
+                },
+                kl: {
+                    payments: klPayments,
+                    skip: klSkip,
+                    feeRate: klFeeRate,
+                    skipFeeRate: klSkipFeeRate,
+                    totalFeeRate: klTotalFeeRate,
+                    feeAmount: klFeeAmount,
+                    final: klFinal,
+                    perMonth: klPerMonth
+                },
+                timestamp: new Date()
             };
 
-            customers.push(newCustomer);
-            localStorage.setItem(StorageKey.CUSTOMERS, JSON.stringify(customers));
+            const summaryHTML = `
+                <div style="margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--color-border);">
+                    <strong style="color: var(--color-primary); font-size: 13px;">ジャックスカード</strong>
+                    <div class="summary-row">
+                        <span class="summary-label">1. 値引き前合計</span>
+                        <span class="summary-value">¥${formatNumber(totalBeforeFee)}</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="summary-label">2. 値引き金額</span>
+                        <span class="summary-value" style="color: var(--color-warning);">-¥${formatNumber(discountTotal)}</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="summary-label">3. 値引き後合計</span>
+                        <span class="summary-value">¥${formatNumber(totalAfterDiscount)}</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="summary-label">4. 手数料</span>
+                        <span class="summary-value">¥${formatNumber(jackxFeeAmount)}</span>
+                    </div>
+                    <div class="fee-detail">支払い回数: ${jackxFeeRate.toFixed(1)}% | スキップ: ${jackxSkipFeeRate.toFixed(1)}% | 合計: ${jackxTotalFeeRate.toFixed(1)}%</div>
+                    <div class="summary-row">
+                        <span class="summary-label">5. 最終合計</span>
+                        <span class="summary-value" style="color: var(--color-primary); font-weight: 700;">¥${formatNumber(jackxFinal)}</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="summary-label">6. 1回の支払い（${jackxPayments}回）</span>
+                        <span class="summary-value" style="color: var(--color-primary); font-weight: 700;">¥${formatNumber(jackxPerMonth)}</span>
+                    </div>
+                </div>
+                <div>
+                    <strong style="color: var(--color-primary); font-size: 13px;">ショッピング・KL</strong>
+                    <div class="summary-row">
+                        <span class="summary-label">1. 値引き前合計</span>
+                        <span class="summary-value">¥${formatNumber(totalBeforeFee)}</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="summary-label">2. 値引き金額</span>
+                        <span class="summary-value" style="color: var(--color-warning);">-¥${formatNumber(discountTotal)}</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="summary-label">3. 値引き後合計</span>
+                        <span class="summary-value">¥${formatNumber(totalAfterDiscount)}</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="summary-label">4. 手数料</span>
+                        <span class="summary-value">¥${formatNumber(klFeeAmount)}</span>
+                    </div>
+                    <div class="fee-detail">支払い回数: ${klFeeRate.toFixed(1)}% | スキップ: ${klSkipFeeRate.toFixed(1)}% | 合計: ${klTotalFeeRate.toFixed(1)}%</div>
+                    <div class="summary-row">
+                        <span class="summary-label">5. 最終合計</span>
+                        <span class="summary-value" style="color: var(--color-primary); font-weight: 700;">¥${formatNumber(klFinal)}</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="summary-label">6. 1回の支払い（${klPayments}回）</span>
+                        <span class="summary-value" style="color: var(--color-primary); font-weight: 700;">¥${formatNumber(klPerMonth)}</span>
+                    </div>
+                </div>
+            `;
 
-            alert('顧客を登録しました！');
-            resetCustomerForm();
-            renderCustomerList();
-            showScreen('homeScreen');
+            document.getElementById('summaryDetails').innerHTML = summaryHTML;
+            document.getElementById('resultsSection').style.display = 'block';
         }
 
-        // 顧客フォームをリセット
-        function resetCustomerForm() {
-            document.getElementById('newCustomerName').value = '';
-            document.getElementById('newCustomerPhone').value = '';
-            document.getElementById('newCustomerEmail').value = '';
-            document.getElementById('newCustomerSchool').value = '';
-            document.getElementById('newCustomerAffiliation').value = '';
-            document.getElementById('newCustomerCategory').value = '';
-            document.getElementById('newCustomerMemo').value = '';
-            document.getElementById('newCustomerVIP').checked = false;
-            document.getElementById('newCustomerTsumigi').checked = false;
-        }
-
-        // 修科を追加（カスタム値）
-        function addCustomCategory() {
-            const newCategory = prompt('新しい修科を入力してください:');
-            if (newCategory) {
-                const select = document.getElementById('newCustomerCategory');
-                const option = document.createElement('option');
-                option.value = newCategory;
-                option.textContent = newCategory;
-                select.appendChild(option);
-                select.value = newCategory;
-                alert(`「${newCategory}」を追加しました`);
-            }
-        }
-
-        // 顧客詳細を表示
-        function viewCustomerDetail(customerId) {
-            currentCustomerId = customerId;
-            const customers = JSON.parse(localStorage.getItem(StorageKey.CUSTOMERS)) || [];
-            const customer = customers.find(c => c.id === customerId);
-
-            if (!customer) return;
-
-            document.getElementById('detailCustomerName').textContent = 
-                (customer.vip ? '⭐ ' : '') + customer.name;
-            document.getElementById('detailCustomerPhone').textContent = customer.phone || '—';
-            document.getElementById('detailCustomerEmail').textContent = customer.email || '—';
-            document.getElementById('detailCustomerSchool').textContent = customer.school || '—';
-            document.getElementById('detailCustomerAffiliation').textContent = customer.affiliation || '—';
-            document.getElementById('detailCustomerCategory').textContent = customer.category || '—';
-            document.getElementById('detailVisitCount').textContent = getPurchaseCount(customerId);
-            document.getElementById('detailLastVisit').textContent = getLastVisitDate(customerId) || '—';
-            document.getElementById('detailCreatedDate').textContent = 
-                new Date(customer.createdDate).toLocaleDateString('ja-JP');
-
-            renderPurchaseList();
-            showScreen('customerDetailScreen');
-            document.getElementById('editCustomerForm').style.display = 'none';
-        }
-
-        // 顧客編集を開く
-        function editCustomer() {
-            const customers = JSON.parse(localStorage.getItem(StorageKey.CUSTOMERS)) || [];
-            const customer = customers.find(c => c.id === currentCustomerId);
-            if (!customer) return;
-
-            document.getElementById('editCustomerName').value = customer.name;
-            document.getElementById('editCustomerPhone').value = customer.phone || '';
-            document.getElementById('editCustomerEmail').value = customer.email || '';
-            document.getElementById('editCustomerSchool').value = customer.school || '';
-            document.getElementById('editCustomerAffiliation').value = customer.affiliation || '';
-            document.getElementById('editCustomerCategory').value = customer.category || '';
-            document.getElementById('editCustomerVIP').checked = customer.vip || false;
-            document.getElementById('editCustomerTsumigi').checked = customer.tsumigi || false;
-
-            document.getElementById('editCustomerForm').style.display = 'block';
-        }
-
-        // 顧客編集をキャンセル
-        function cancelEditCustomer() {
-            document.getElementById('editCustomerForm').style.display = 'none';
-        }
-
-        // 顧客情報を保存
-        function saveCustomerEdit() {
-            const name = document.getElementById('editCustomerName').value;
-            if (!name) {
-                alert('顧客名は必須です');
+        function renderCardSelects() {
+            const section = document.getElementById('cardSelectionsSection');
+            if (cardTypes.length === 0) {
+                section.innerHTML = '';
                 return;
             }
 
-            const customers = JSON.parse(localStorage.getItem(StorageKey.CUSTOMERS)) || [];
-            const customer = customers.find(c => c.id === currentCustomerId);
-            if (!customer) return;
-
-            customer.name = name;
-            customer.phone = document.getElementById('editCustomerPhone').value;
-            customer.email = document.getElementById('editCustomerEmail').value;
-            customer.school = document.getElementById('editCustomerSchool').value;
-            customer.affiliation = document.getElementById('editCustomerAffiliation').value;
-            customer.category = document.getElementById('editCustomerCategory').value;
-            customer.vip = document.getElementById('editCustomerVIP').checked;
-            customer.tsumigi = document.getElementById('editCustomerTsumigi').checked;
-
-            localStorage.setItem(StorageKey.CUSTOMERS, JSON.stringify(customers));
-            alert('顧客情報を更新しました');
-            viewCustomerDetail(currentCustomerId);
-            renderCustomerList();
+            section.innerHTML = cardTypes.map(card => `
+                <section>
+                    <h2>${card.name}</h2>
+                    <div class="row">
+                        <div class="form-group">
+                            <label>支払い回数</label>
+                            <select id="${card.id}Payments" onchange="updateCalculation()">
+                                ${Object.keys(card.payments).map(p => `<option value="${p}">${p}回</option>`).join('')}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>スキップ回数</label>
+                            <select id="${card.id}Skip" onchange="updateCalculation()">
+                                ${Object.keys(skipFeeRates[card.id] || {}).map(s => `<option value="${s}">${s}回</option>`).join('')}
+                            </select>
+                        </div>
+                    </div>
+                </section>
+            `).join('');
         }
 
-        // 購入リストを表示（新しい順）
-        function renderPurchaseList() {
-            const purchases = JSON.parse(localStorage.getItem(StorageKey.PURCHASES)) || [];
-            const customerPurchases = purchases.filter(p => p.customerId === currentCustomerId);
-
-            // 日付が新しい順にソート
-            customerPurchases.sort((a, b) => new Date(b.date) - new Date(a.date));
-
-            const listHtml = customerPurchases.map(purchase => {
-                const photoCount = getPhotoCount(purchase.id);
-                const exhibitionText = purchase.exhibition === 'その他' ? 
-                    `（${purchase.exhibitionOther}）` : '';
-                const exhibitionDisplay = purchase.exhibition ? 
-                    `<div class="purchase-product">🎪 展示会: ${purchase.year}年 ${purchase.exhibition}${exhibitionText}</div>` : '';
-
+        function renderCardTypesTable() {
+            const container = document.getElementById('cardTypesTable');
+            container.innerHTML = cardTypes.map((card) => {
+                const isDefault = card.id === 'jackx' || card.id === 'kl';
                 return `
-                    <div class="purchase-item" onclick="viewPhotos('${purchase.id}')">
-                        <div class="purchase-header">
-                            <span class="purchase-date">${new Date(purchase.date).toLocaleDateString('ja-JP')}</span>
-                            <span class="purchase-amount">¥${purchase.amount.toLocaleString()}</span>
+                    <div class="product-item">
+                        <div class="form-group">
+                            <label>カード名</label>
+                            <input type="text" value="${card.name}" ${isDefault ? 'disabled' : `onchange="updateCardName('${card.id}', this.value)"`}>
                         </div>
-                        <div class="purchase-product">${purchase.product}</div>
-                        ${exhibitionDisplay}
-                        ${purchase.loanBalance > 0 ? 
-                            `<div class="purchase-product">💳 ローン残高: ¥${purchase.loanBalance.toLocaleString()} (残${purchase.paymentCount}回)</div>` 
-                            : ''}
-                        <div class="purchase-photos">
-                            📸 ${photoCount}枚の写真
-                        </div>
-                        <button class="btn btn-secondary" style="width: 100%; margin-top: 8px; font-size: 12px; padding: 6px;" onclick="editPurchase('${purchase.id}'); event.stopPropagation();">
-                            ✏️ 編集
-                        </button>
+                        ${!isDefault ? `<button class="btn-remove" onclick="deleteCardType('${card.id}')">削除</button>` : ''}
                     </div>
                 `;
             }).join('');
-
-            document.getElementById('purchaseList').innerHTML = listHtml || 
-                '<div class="empty-state"><div class="empty-state-icon">📭</div>購入履歴がありません</div>';
         }
 
-        // 購入を編集
-        function editPurchase(purchaseId) {
-            const purchases = JSON.parse(localStorage.getItem(StorageKey.PURCHASES)) || [];
-            const purchase = purchases.find(p => p.id === purchaseId);
-            if (!purchase) return;
-
-            document.getElementById('newPurchaseDate').value = purchase.date;
-            document.getElementById('newPurchaseAmount').value = purchase.amount;
-            document.getElementById('newPurchaseProduct').value = purchase.product;
-            document.getElementById('newPurchaseLoanBalance').value = purchase.loanBalance || 0;
-            document.getElementById('newPurchasePaymentCount').value = purchase.paymentCount || 0;
-            document.getElementById('newPurchaseFinalPayment').value = purchase.finalPayment || '';
-            document.getElementById('newPurchaseYear').value = purchase.year || '';
-            document.getElementById('newPurchaseExhibition').value = purchase.exhibition || '';
-            document.getElementById('newPurchaseExhibitionOther').value = purchase.exhibitionOther || '';
-
-            currentPurchaseId = purchaseId;
-            showScreen('newPurchaseScreen');
-            document.querySelector('h2').textContent = '購入履歴編集';
-        }
-
-        // 写真数を取得
-        function getPhotoCount(purchaseId) {
-            const photos = JSON.parse(localStorage.getItem(StorageKey.PHOTOS)) || [];
-            return photos.filter(p => p.purchaseId === purchaseId).length;
-        }
-
-        // 購入を保存
-        function savePurchase() {
-            const date = document.getElementById('newPurchaseDate').value;
-            const amount = document.getElementById('newPurchaseAmount').value;
-            const product = document.getElementById('newPurchaseProduct').value;
-
-            if (!date || !amount || !product) {
-                alert('購入日、金額、商品説明は必須です');
-                return;
+        function updateCardName(cardId, newName) {
+            const card = cardTypes.find(c => c.id === cardId);
+            if (card) {
+                card.name = newName;
+                saveCardTypes();
+                renderCardSelects();
             }
+        }
 
-            const purchases = JSON.parse(localStorage.getItem(StorageKey.PURCHASES)) || [];
-            
-            if (currentPurchaseId) {
-                // 編集モード
-                const purchase = purchases.find(p => p.id === currentPurchaseId);
-                if (purchase) {
-                    purchase.date = date;
-                    purchase.amount = parseInt(amount);
-                    purchase.product = product;
-                    purchase.loanBalance = parseInt(document.getElementById('newPurchaseLoanBalance').value) || 0;
-                    purchase.paymentCount = parseInt(document.getElementById('newPurchasePaymentCount').value) || 0;
-                    purchase.finalPayment = document.getElementById('newPurchaseFinalPayment').value;
-                    purchase.year = document.getElementById('newPurchaseYear').value;
-                    purchase.exhibition = document.getElementById('newPurchaseExhibition').value;
-                    purchase.exhibitionOther = document.getElementById('newPurchaseExhibitionOther').value;
-                }
-                alert('購入履歴を更新しました！');
+        function deleteCardType(cardId) {
+            if (confirm('このカード種類を削除しますか？')) {
+                cardTypes = cardTypes.filter(c => c.id !== cardId);
+                delete skipFeeRates[cardId];
+                saveCardTypes();
+                saveSkipFeeRates();
+                renderCardSelects();
+                renderCardTypesTable();
+                renderCardPaymentTable();
+                renderSkipFeeTable();
+                updateCalculation();
+            }
+        }
+
+        function addCardType() {
+            const newId = 'card_' + Date.now();
+            cardTypes.push({
+                id: newId,
+                name: '新規カード',
+                payments: { 1: 0, 3: 0, 6: 0, 10: 0, 12: 0, 15: 0, 18: 0, 20: 0, 24: 0, 30: 0, 36: 0 },
+                skip: { 0: 0, 1: 0.5, 2: 1.0, 3: 1.5, 4: 2.0, 5: 2.5, 6: 3.0 }
+            });
+            skipFeeRates[newId] = { 0: 0, 1: 0.5, 2: 1.0, 3: 1.5, 4: 2.0, 5: 2.5, 6: 3.0 };
+            saveCardTypes();
+            saveSkipFeeRates();
+            renderCardSelects();
+            renderCardTypesTable();
+            renderCardPaymentTable();
+            renderSkipFeeTable();
+            updateCalculation();
+        }
+
+        function renderCardPaymentTable() {
+            const container = document.getElementById('cardPaymentTable');
+            let html = '';
+
+            cardTypes.forEach(card => {
+                html += `
+                    <div style="margin-bottom: 12px;">
+                        <h3 style="font-size: 12px; font-weight: 600; margin-bottom: 8px; color: var(--color-primary);">${card.name}</h3>
+                        ${Object.entries(card.payments).map(([payments, fee]) => `
+                            <div class="product-item" style="margin-bottom: 6px;">
+                                <div class="row">
+                                    <div class="form-group">
+                                        <label style="font-size: 11px;">支払い回数</label>
+                                        <input type="text" value="${payments}回" disabled style="background: #f5f5f5;">
+                                    </div>
+                                    <div class="form-group">
+                                        <label style="font-size: 11px;">手数料 (%)</label>
+                                        <input type="number" value="${fee}" step="0.1" min="0" onchange="updateCardPayment('${card.id}', ${payments}, this.value)">
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function renderSkipFeeTable() {
+            const container = document.getElementById('skipFeeTable');
+            let html = '';
+
+            cardTypes.forEach(card => {
+                html += `
+                    <div style="margin-bottom: 12px;">
+                        <h3 style="font-size: 12px; font-weight: 600; margin-bottom: 8px; color: var(--color-primary);">${card.name}</h3>
+                        ${Object.entries(skipFeeRates[card.id] || { 0: 0, 1: 0.5, 2: 1.0, 3: 1.5, 4: 2.0, 5: 2.5, 6: 3.0 }).map(([skip, fee]) => `
+                            <div class="product-item" style="margin-bottom: 6px;">
+                                <div class="row">
+                                    <div class="form-group">
+                                        <label style="font-size: 11px;">スキップ</label>
+                                        <input type="text" value="${skip}ヶ月" disabled style="background: #f5f5f5;">
+                                    </div>
+                                    <div class="form-group">
+                                        <label style="font-size: 11px;">手数料 (%)</label>
+                                        <input type="number" value="${fee}" step="0.1" min="0" onchange="updateSkipFee('${card.id}', ${skip}, this.value)">
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function updateCardPayment(cardId, payments, fee) {
+            const card = cardTypes.find(c => c.id === cardId);
+            if (card) {
+                card.payments[payments] = parseFloat(fee) || 0;
+                saveCardTypes();
+                updateLastUpdateTime('cardPayment');
+                updateCalculation();
+            }
+        }
+
+        function updateSkipFee(cardId, skip, fee) {
+            if (!skipFeeRates[cardId]) {
+                skipFeeRates[cardId] = { 0: 0, 1: 0.5, 2: 1.0, 3: 1.5, 4: 2.0, 5: 2.5, 6: 3.0 };
+            }
+            skipFeeRates[cardId][skip] = parseFloat(fee) || 0;
+            saveSkipFeeRates();
+            updateLastUpdateTime('skipFee');
+            updateCalculation();
+        }
+
+        function addPresetItem(category) {
+            const newId = Math.max(...presetData[category].map(p => p.id || 0), 0) + 1;
+            presetData[category].push({
+                id: newId,
+                name: `新規（¥0）`,
+                price: 0
+            });
+            savePresetData();
+            renderPresetList(category);
+        }
+
+        function updatePresetItem(category, index, field, value) {
+            if (field === 'price') {
+                presetData[category][index].price = parseInt(value) || 0;
             } else {
-                // 新規モード
-                const newPurchase = {
-                    id: 'P' + String(purchases.length + 1).padStart(3, '0'),
-                    customerId: currentCustomerId,
-                    date,
-                    amount: parseInt(amount),
-                    product,
-                    loanBalance: parseInt(document.getElementById('newPurchaseLoanBalance').value) || 0,
-                    paymentCount: parseInt(document.getElementById('newPurchasePaymentCount').value) || 0,
-                    finalPayment: document.getElementById('newPurchaseFinalPayment').value,
-                    year: document.getElementById('newPurchaseYear').value,
-                    exhibition: document.getElementById('newPurchaseExhibition').value,
-                    exhibitionOther: document.getElementById('newPurchaseExhibitionOther').value,
-                    timestamp: new Date().toISOString()
-                };
-
-                purchases.push(newPurchase);
-                
-                // 写真を保存
-                const photoInput = document.getElementById('newPurchasePhoto');
-                if (photoInput.files.length > 0) {
-                    savePhotos(newPurchase.id, photoInput.files);
-                }
-
-                alert('購入履歴を記録しました！');
+                presetData[category][index].name = value;
             }
-
-            localStorage.setItem(StorageKey.PURCHASES, JSON.stringify(purchases));
-            
-            // フォームをリセット
-            document.getElementById('newPurchaseDate').value = '';
-            document.getElementById('newPurchaseAmount').value = '';
-            document.getElementById('newPurchaseProduct').value = '';
-            document.getElementById('newPurchaseLoanBalance').value = '';
-            document.getElementById('newPurchasePaymentCount').value = '';
-            document.getElementById('newPurchaseFinalPayment').value = '';
-            document.getElementById('newPurchaseYear').value = '';
-            document.getElementById('newPurchaseExhibition').value = '';
-            document.getElementById('newPurchaseExhibitionOther').value = '';
-            document.getElementById('newPurchasePhoto').value = '';
-            document.getElementById('photoPreview').innerHTML = '';
-            currentPurchaseId = null;
-
-            document.querySelector('#newPurchaseScreen h2').textContent = '新規購入登録';
-            renderPurchaseList();
-            showScreen('customerDetailScreen');
+            savePresetData();
+            updateLastUpdateTime(category);
+            renderPresetList(category);
         }
 
-        // 写真プレビューを表示
-        function previewPhotos() {
-            const input = document.getElementById('newPurchasePhoto');
-            const preview = document.getElementById('photoPreview');
-            preview.innerHTML = '';
-
-            Array.from(input.files).forEach((file, index) => {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    const item = document.createElement('div');
-                    item.className = 'gallery-item';
-                    item.innerHTML = `
-                        <img src="${e.target.result}" />
-                        <div class="gallery-item-counter">${index + 1}</div>
-                    `;
-                    preview.appendChild(item);
-                };
-                reader.readAsDataURL(file);
-            });
+        function deletePresetItem(category, index) {
+            if (confirm('削除しますか？')) {
+                presetData[category].splice(index, 1);
+                savePresetData();
+                updateLastUpdateTime(category);
+                renderPresetList(category);
+            }
         }
 
-        // 写真を保存
-        function savePhotos(purchaseId, files) {
-            const photos = JSON.parse(localStorage.getItem(StorageKey.PHOTOS)) || [];
-            const purchases = JSON.parse(localStorage.getItem(StorageKey.PURCHASES)) || [];
-            const purchase = purchases.find(p => p.id === purchaseId);
+        function renderPresetListWithDiscounts(category) {
+            const container = document.getElementById(category === 'guard' ? 'guardList' : category === 'lining' ? 'liningList' : category === 'tailor' ? 'tailorList' : 'otherList');
 
-            Array.from(files).forEach((file, index) => {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    const photo = {
-                        id: 'IMG' + String(photos.length + 1).padStart(4, '0'),
-                        purchaseId,
-                        customerId: currentCustomerId,
-                        url: e.target.result,
-                        timestamp: new Date().toISOString(),
-                        order: index
-                    };
-                    photos.push(photo);
-                    localStorage.setItem(StorageKey.PHOTOS, JSON.stringify(photos));
-                };
-                reader.readAsDataURL(file);
-            });
+            html += presetData[category].map((item, index) => {
+                const showDiscounts = ['guard', 'lining', 'tailor'].includes(category);
+                const productDiscounts = productDiscountRates[`${category}_${item.id}`] || { student: 0, member: 0, instructor: 0 };
+
+                return `
+                    <div class="product-item">
+                        <div class="form-group">
+                            <label>商品名</label>
+                            <input type="text" value="${item.name}" onchange="updatePresetItem('${category}', ${index}, 'name', this.value)">
+                        </div>
+                        <div class="form-group">
+                            <label>金額（円）</label>
+                            <input type="number" value="${item.price}" placeholder="0" onchange="updatePresetItem('${category}', ${index}, 'price', this.value)" oninput="this.value = formatNumberInput(this.value)">
+                        </div>
+                        ${showDiscounts ? `
+                        <div style="background: #f0f0f0; border-radius: 4px; padding: 8px; margin-bottom: 8px;">
+                            <label style="font-size: 11px; font-weight: 600; display: block; margin-bottom: 6px;">割引率設定</label>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px;">
+                                <div>
+                                    <label style="font-size: 10px;">修科生 (%)</label>
+                                    <input type="number" value="${productDiscounts.student || 0}" onchange="updateProductDiscount('${category}', ${item.id}, 'student', this.value)" step="0.1" min="0" max="100" style="width: 100%; padding: 4px; font-size: 11px;">
+                                </div>
+                                <div>
+                                    <label style="font-size: 10px;">しゅう美会生 (%)</label>
+                                    <input type="number" value="${productDiscounts.member || 0}" onchange="updateProductDiscount('${category}', ${item.id}, 'member', this.value)" step="0.1" min="0" max="100" style="width: 100%; padding: 4px; font-size: 11px;">
+                                </div>
+                                <div>
+                                    <label style="font-size: 10px;">講師 (%)</label>
+                                    <input type="number" value="${productDiscounts.instructor || 0}" onchange="updateProductDiscount('${category}', ${item.id}, 'instructor', this.value)" step="0.1" min="0" max="100" style="width: 100%; padding: 4px; font-size: 11px;">
+                                </div>
+                            </div>
+                        </div>
+                        ` : ''}
+                        <button class="btn-remove" onclick="deletePresetItem('${category}', ${index})">削除</button>
+                    </div>
+                `;
+            }).join('');
+            container.innerHTML = html;
         }
 
-        // 写真を表示
-        function viewPhotos(purchaseId) {
-            currentPurchaseId = purchaseId;
-            const photos = JSON.parse(localStorage.getItem(StorageKey.PHOTOS)) || [];
-            currentPhotos = photos.filter(p => p.purchaseId === purchaseId).sort((a, b) => a.order - b.order);
+        function renderPresetList(category) {
+            renderPresetListWithDiscounts(category);
+        }
 
-            if (currentPhotos.length === 0) {
-                alert('この購入に関する写真がありません');
+        function renderCategoryDiscountList() {
+            const container = document.getElementById('categoryDiscountList');
+            const lastUpdate = lastUpdateTimes['categoryDiscount'] ? formatDateJP(lastUpdateTimes['categoryDiscount']) : '未更新';
+
+            container.innerHTML = `
+                <div style="background: #f0f0f0; border-radius: 6px; padding: 12px; margin-bottom: 12px; font-size: 12px; color: var(--color-text-secondary);">
+                    最終更新: ${lastUpdate}
+                </div>
+                ${categoryList.map(category => `
+                    <div class="product-item">
+                        <div class="form-group">
+                            <label style="font-weight: 600;">${categoryLabels[category]}</label>
+                        </div>
+                        <div style="background: #f0f0f0; border-radius: 4px; padding: 8px; margin-bottom: 8px;">
+                            <label style="font-size: 11px; font-weight: 600; display: block; margin-bottom: 6px;">割引率設定</label>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px;">
+                                <div>
+                                    <label style="font-size: 10px;">修科生 (%)</label>
+                                    <input type="number" value="${categoryDiscounts[category]?.student || 0}" onchange="updateCategoryDiscount('${category}', 'student', this.value)" step="0.1" min="0" max="100" style="width: 100%; padding: 4px; font-size: 11px;">
+                                </div>
+                                <div>
+                                    <label style="font-size: 10px;">しゅう美会生 (%)</label>
+                                    <input type="number" value="${categoryDiscounts[category]?.member || 0}" onchange="updateCategoryDiscount('${category}', 'member', this.value)" step="0.1" min="0" max="100" style="width: 100%; padding: 4px; font-size: 11px;">
+                                </div>
+                                <div>
+                                    <label style="font-size: 10px;">講師 (%)</label>
+                                    <input type="number" value="${categoryDiscounts[category]?.instructor || 0}" onchange="updateCategoryDiscount('${category}', 'instructor', this.value)" step="0.1" min="0" max="100" style="width: 100%; padding: 4px; font-size: 11px;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('')}
+            `;
+        }
+
+        function updateCategoryDiscount(category, customerType, value) {
+            if (!categoryDiscounts[category]) {
+                categoryDiscounts[category] = { student: 0, member: 0, instructor: 0 };
+            }
+            categoryDiscounts[category][customerType] = parseFloat(value) || 0;
+            saveCategoryDiscounts();
+            updateLastUpdateTime('categoryDiscount');
+            updateCalculation();
+        }
+
+        function updateProductDiscount(category, productId, customerType, value) {
+            const key = `${category}_${productId}`;
+            if (!productDiscountRates[key]) {
+                productDiscountRates[key] = { student: 0, member: 0, instructor: 0 };
+            }
+            productDiscountRates[key][customerType] = parseFloat(value) || 0;
+            saveProductDiscountRates();
+            updateLastUpdateTime(category);
+            updateCalculation();
+        }
+
+        function getProductDiscount(category, productId, customerType) {
+            const key = `${category}_${productId}`;
+            if (productDiscountRates[key]) {
+                return productDiscountRates[key][customerType] || 0;
+            }
+            return 0;
+        }
+
+        let calculationHistory = [];
+
+        function loadHistory() {
+            const saved = localStorage.getItem('calculationHistory');
+            if (saved) calculationHistory = JSON.parse(saved);
+        }
+
+        function saveToHistory() {
+            if (!calculation) return;
+            calculationHistory.unshift(calculation);
+            if (calculationHistory.length > 100) calculationHistory.pop();
+            localStorage.setItem('calculationHistory', JSON.stringify(calculationHistory));
+            renderHistory();
+            alert('計算結果を保存しました');
+        }
+
+        function renderHistory() {
+            const container = document.getElementById('historySection');
+            if (calculationHistory.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📋</div><div class="empty-state-text">計算履歴がありません</div></div>';
                 return;
             }
 
-            const gallery = document.getElementById('fullGallery');
-            gallery.innerHTML = currentPhotos.map((photo, index) => `
-                <div class="gallery-item" onclick="openLightbox(${index})">
-                    <img src="${photo.url}" />
-                    <div class="gallery-item-counter">${index + 1}</div>
+            container.innerHTML = calculationHistory.map((calc, index) => {
+                const date = new Date(calc.timestamp);
+                const timeStr = date.toLocaleString('ja-JP');
+                const jackxTotal = calc.jackx.final;
+                const klTotal = calc.kl.final;
+
+                return `
+                    <div class="history-item" onclick="showCalculationDetail(${index})">
+                        <div class="history-time">${timeStr}</div>
+                        <div class="history-customer">顧客種別: ${calc.customerType === 'student' ? '修科生' : calc.customerType === 'member' ? 'しゅう美会生' : '講師'}</div>
+                        <div class="history-total">ジャックス: ¥${formatNumber(jackxTotal)}</div>
+                        <div class="history-detail">KL: ¥${formatNumber(klTotal)}</div>
+                        <button class="btn-delete" onclick="event.stopPropagation(); deleteHistoryItem(${index})">削除</button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function showCalculationDetail(index) {
+            const calc = calculationHistory[index];
+            const detailContent = document.getElementById('detailContent');
+
+            const productDetailsHTML = calc.productDetails.map(p => `
+                <div class="detail-item">
+                    <span>${categoryLabels[p.category] || p.category}</span>
+                    <span>¥${formatNumber(p.price)} → ¥${formatNumber(p.priceAfterDiscount)} (割引: ${p.discountRate}%)</span>
                 </div>
             `).join('');
 
-            showScreen('photoGalleryScreen');
+            detailContent.innerHTML = `
+                <h2 style="font-size: 16px; margin-bottom: 12px;">計算結果詳細</h2>
+                <div class="detail-section">
+                    <h3>基本情報</h3>
+                    <div class="detail-item">
+                        <span>顧客種別</span>
+                        <span>${calc.customerType === 'student' ? '修科生' : calc.customerType === 'member' ? 'しゅう美会生' : '講師'}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span>日時</span>
+                        <span>${new Date(calc.timestamp).toLocaleString('ja-JP')}</span>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h3>商品明細</h3>
+                    ${productDetailsHTML}
+                </div>
+
+                <div class="detail-section">
+                    <h3>ジャックスカード</h3>
+                    <div class="detail-item">
+                        <span>支払い回数</span>
+                        <span>${calc.jackx.payments}回</span>
+                    </div>
+                    <div class="detail-item">
+                        <span>手数料</span>
+                        <span>¥${formatNumber(calc.jackx.feeAmount)}</span>
+                    </div>
+                    <div class="fee-detail">支払い回数: ${calc.jackx.feeRate.toFixed(1)}% | スキップ: ${calc.jackx.skipFeeRate.toFixed(1)}% | 合計: ${calc.jackx.totalFeeRate.toFixed(1)}%</div>
+                    <div class="detail-item">
+                        <span>最終合計</span>
+                        <span style="font-weight: 600; color: var(--color-primary);">¥${formatNumber(calc.jackx.final)}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span>1回の支払い</span>
+                        <span style="font-weight: 600; color: var(--color-primary);">¥${formatNumber(calc.jackx.perMonth)}</span>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h3>ショッピング・KL</h3>
+                    <div class="detail-item">
+                        <span>支払い回数</span>
+                        <span>${calc.kl.payments}回</span>
+                    </div>
+                    <div class="detail-item">
+                        <span>手数料</span>
+                        <span>¥${formatNumber(calc.kl.feeAmount)}</span>
+                    </div>
+                    <div class="fee-detail">支払い回数: ${calc.kl.feeRate.toFixed(1)}% | スキップ: ${calc.kl.skipFeeRate.toFixed(1)}% | 合計: ${calc.kl.totalFeeRate.toFixed(1)}%</div>
+                    <div class="detail-item">
+                        <span>最終合計</span>
+                        <span style="font-weight: 600; color: var(--color-primary);">¥${formatNumber(calc.kl.final)}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span>1回の支払い</span>
+                        <span style="font-weight: 600; color: var(--color-primary);">¥${formatNumber(calc.kl.perMonth)}</span>
+                    </div>
+                </div>
+
+                <button class="modal-close" onclick="closeModal()">閉じる</button>
+            `;
+
+            document.getElementById('detailModal').classList.add('active');
         }
 
-        // ライトボックスを開く
-        function openLightbox(index) {
-            currentPhotoIndex = index;
-            const photo = currentPhotos[index];
-            document.getElementById('lightboxImage').src = photo.url;
-            document.getElementById('lightboxInfo').textContent = 
-                `写真 ${index + 1} / ${currentPhotos.length}`;
-            document.getElementById('lightbox').classList.add('active');
+        function closeModal() {
+            document.getElementById('detailModal').classList.remove('active');
         }
 
-        // ライトボックスを閉じる
-        function closeLightbox() {
-            document.getElementById('lightbox').classList.remove('active');
-        }
-
-        // 前の写真
-        function previousPhoto() {
-            if (currentPhotoIndex > 0) {
-                openLightbox(currentPhotoIndex - 1);
+        function deleteHistoryItem(index) {
+            if (confirm('この履歴を削除しますか？')) {
+                calculationHistory.splice(index, 1);
+                localStorage.setItem('calculationHistory', JSON.stringify(calculationHistory));
+                renderHistory();
             }
         }
 
-        // 次の写真
-        function nextPhoto() {
-            if (currentPhotoIndex < currentPhotos.length - 1) {
-                openLightbox(currentPhotoIndex + 1);
+        function switchTab(tabName) {
+            const tabs = document.querySelectorAll('.tab-content');
+            const buttons = document.querySelectorAll('.tab-btn');
+
+            tabs.forEach(t => t.classList.remove('active'));
+            buttons.forEach(b => b.classList.remove('active'));
+
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+
+            if (tabName === 'preset') {
+                renderCardTypesTable();
+                renderCardPaymentTable();
+                renderSkipFeeTable();
+                renderPresetListWithDiscounts('guard');
+                renderPresetListWithDiscounts('lining');
+                renderPresetListWithDiscounts('tailor');
+                renderPresetListWithDiscounts('other');
+                renderCategoryDiscountList();
             }
         }
 
-        // 顧客を編集
-        function editCustomer() {
-            alert('編集機能は次のバージョンで追加予定です');
-        }
+        function checkPassword() {
+            const input = document.getElementById('passwordInput').value;
+            const correctPassword = '1234';
 
-        // 顧客を削除（確認付き）
-        function deleteCustomerConfirm() {
-            if (!confirm('この顧客を削除してもよろしいですか？\n（関連する購入履歴も削除されます）')) {
-                return;
-            }
-            deleteCustomer();
-        }
-
-        // 顧客を削除
-        function deleteCustomer() {
-            const customers = JSON.parse(localStorage.getItem(StorageKey.CUSTOMERS)) || [];
-            const purchases = JSON.parse(localStorage.getItem(StorageKey.PURCHASES)) || [];
-            const photos = JSON.parse(localStorage.getItem(StorageKey.PHOTOS)) || [];
-
-            // 関連する購入履歴と写真も削除
-            const purchaseIds = purchases
-                .filter(p => p.customerId === currentCustomerId)
-                .map(p => p.id);
-
-            const newCustomers = customers.filter(c => c.id !== currentCustomerId);
-            const newPurchases = purchases.filter(p => p.customerId !== currentCustomerId);
-            const newPhotos = photos.filter(p => !purchaseIds.includes(p.purchaseId));
-
-            localStorage.setItem(StorageKey.CUSTOMERS, JSON.stringify(newCustomers));
-            localStorage.setItem(StorageKey.PURCHASES, JSON.stringify(newPurchases));
-            localStorage.setItem(StorageKey.PHOTOS, JSON.stringify(newPhotos));
-
-            alert('顧客を削除しました');
-            renderCustomerList();
-            showScreen('homeScreen');
-        }
-
-        // 検索
-        function searchCustomers() {
-            renderCustomerList();
-        }
-
-        // 修科カテゴリーのリスト
-        const customCategories = [];
-
-        // カスタムカテゴリーの追加
-        function addCustomCategory() {
-            const newCategory = prompt('新しい修科を入力してください:');
-            if (newCategory && !customCategories.includes(newCategory)) {
-                customCategories.push(newCategory);
-                // すべてのセレクトを更新
-                updateCategorySelects();
-                alert(`「${newCategory}」を追加しました`);
+            if (input === correctPassword) {
+                document.getElementById('passwordOverlay').style.display = 'none';
+                document.querySelector('.main-content').classList.add('unlocked');
+                initPresetData();
+                renderCardSelects();
+                loadHistory();
+                renderHistory();
+                addProduct();
+            } else {
+                document.getElementById('passwordError').style.display = 'block';
+                document.getElementById('passwordInput').value = '';
             }
         }
 
-        // カテゴリーセレクトを更新
-        function updateCategorySelects() {
-            const selects = [
-                document.getElementById('newCustomerCategory'),
-                document.getElementById('editCustomerCategory')
-            ];
-
-            selects.forEach(select => {
-                if (!select) return;
-                const currentValue = select.value;
-                // カスタムカテゴリーがまだ表示されていないものを追加
-                customCategories.forEach(cat => {
-                    if (!Array.from(select.options).some(opt => opt.value === cat)) {
-                        const option = document.createElement('option');
-                        option.value = cat;
-                        option.textContent = cat;
-                        select.appendChild(option);
-                    }
-                });
-            });
-        }
-
-        // ===== V2.1 新機能：データエクスポート =====
-
-        // 顧客データをCSV形式でエクスポート
-        function exportCustomersToCSV() {
-            const customers = JSON.parse(localStorage.getItem(StorageKey.CUSTOMERS)) || [];
-            const purchases = JSON.parse(localStorage.getItem(StorageKey.PURCHASES)) || [];
-            
-            if (customers.length === 0) {
-                alert('エクスポートする顧客データがありません');
-                return;
-            }
-
-            // ヘッダー行
-            const headers = ['顧客ID', '顧客名', '電話', 'メール', '校名', '所属', '修科', 'VIP', '紬好き', '登録日', '来店回数', '合計購入額'];
-            
-            // データ行
-            const rows = customers.map(customer => {
-                const visitCount = purchases.filter(p => p.customerId === customer.id).length;
-                const totalAmount = purchases
-                    .filter(p => p.customerId === customer.id)
-                    .reduce((sum, p) => sum + p.amount, 0);
-                
-                return [
-                    customer.id,
-                    customer.name,
-                    customer.phone || '',
-                    customer.email || '',
-                    customer.school || '',
-                    customer.affiliation || '',
-                    customer.category || '',
-                    customer.vip ? 'はい' : 'いいえ',
-                    customer.tsumigi ? 'はい' : 'いいえ',
-                    new Date(customer.createdDate).toLocaleDateString('ja-JP'),
-                    visitCount,
-                    totalAmount.toLocaleString()
-                ];
-            });
-
-            // CSV形式で出力
-            const csv = [
-                headers.join(','),
-                ...rows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
-            ].join('\n');
-
-            downloadCSV(csv, '顧客データ_' + new Date().toISOString().split('T')[0] + '.csv');
-        }
-
-        // 購入履歴をCSV形式でエクスポート
-        function exportPurchasesToCSV() {
-            const purchases = JSON.parse(localStorage.getItem(StorageKey.PURCHASES)) || [];
-            const customers = JSON.parse(localStorage.getItem(StorageKey.CUSTOMERS)) || [];
-            
-            if (purchases.length === 0) {
-                alert('エクスポートする購入データがありません');
-                return;
-            }
-
-            // ヘッダー行
-            const headers = ['購入ID', '顧客ID', '顧客名', '購入日', '金額', '商品説明', 'ローン残高', '展示会'];
-            
-            // データ行
-            const rows = purchases.map(purchase => {
-                const customer = customers.find(c => c.id === purchase.customerId);
-                const exhibition = purchase.exhibition ? 
-                    `${purchase.year}年 ${purchase.exhibition}${purchase.exhibitionOther ? '（' + purchase.exhibitionOther + '）' : ''}` 
-                    : '';
-                
-                return [
-                    purchase.id,
-                    purchase.customerId,
-                    customer?.name || '—',
-                    new Date(purchase.date).toLocaleDateString('ja-JP'),
-                    purchase.amount.toLocaleString(),
-                    purchase.product,
-                    purchase.loanBalance || '—',
-                    exhibition || '—'
-                ];
-            });
-
-            // CSV形式で出力
-            const csv = [
-                headers.join(','),
-                ...rows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
-            ].join('\n');
-
-            downloadCSV(csv, '購入履歴_' + new Date().toISOString().split('T')[0] + '.csv');
-        }
-
-        // 統計情報を表示
-        function showStatistics() {
-            const customers = JSON.parse(localStorage.getItem(StorageKey.CUSTOMERS)) || [];
-            const purchases = JSON.parse(localStorage.getItem(StorageKey.PURCHASES)) || [];
-
-            const totalCustomers = customers.length;
-            const vipCustomers = customers.filter(c => c.vip).length;
-            const tsumugiCustomers = customers.filter(c => c.tsumigi).length;
-            const totalPurchases = purchases.length;
-            const totalRevenue = purchases.reduce((sum, p) => sum + p.amount, 0);
-            const averagePurchaseAmount = totalPurchases > 0 ? Math.floor(totalRevenue / totalPurchases) : 0;
-
-            // 校ごとのVIP顧客数
-            const vipBySchool = {};
-            customers.filter(c => c.vip).forEach(c => {
-                const school = c.school || '未設定';
-                vipBySchool[school] = (vipBySchool[school] || 0) + 1;
-            });
-
-            // 校ごとの紬好き人数
-            const tsumugiBySchool = {};
-            customers.filter(c => c.tsumigi).forEach(c => {
-                const school = c.school || '未設定';
-                tsumugiBySchool[school] = (tsumugiBySchool[school] || 0) + 1;
-            });
-
-            let stats = `📊 統計情報\n\n`;
-            stats += `顧客総数: ${totalCustomers}人\n`;
-            stats += `購入記録数: ${totalPurchases}件\n`;
-            stats += `総売上: ¥${totalRevenue.toLocaleString()}\n`;
-            stats += `平均購入額: ¥${averagePurchaseAmount.toLocaleString()}\n`;
-            stats += `\n⭐ VIP顧客: ${vipCustomers}人\n`;
-            
-            Object.keys(vipBySchool).sort().forEach(school => {
-                stats += `  ${school}: ${vipBySchool[school]}人\n`;
-            });
-
-            stats += `\n🧵 紬好き: ${tsumugiCustomers}人\n`;
-            
-            Object.keys(tsumugiBySchool).sort().forEach(school => {
-                stats += `  ${school}: ${tsumugiBySchool[school]}人\n`;
-            });
-
-            alert(stats);
-        }
-
-        // 顧客データをCSVからインポート
-        function importCustomersFromCSV() {
-            const file = document.getElementById('importCustomersFile').files[0];
-            if (!file) {
-                alert('ファイルを選択してください');
-                return;
-            }
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const csv = e.target.result;
-                    const lines = csv.split('\n');
-                    
-                    if (lines.length < 2) {
-                        alert('CSVファイルが空です');
-                        return;
-                    }
-
-                    const customers = JSON.parse(localStorage.getItem(StorageKey.CUSTOMERS)) || [];
-                    let importedCount = 0;
-                    let skippedCount = 0;
-
-                    // ヘッダーをスキップしてデータを処理
-                    for (let i = 1; i < lines.length; i++) {
-                        const line = lines[i].trim();
-                        if (!line) continue;
-
-                        // CSV形式をパース（ダブルクォート対応）
-                        const cells = parseCSVLine(line);
-                        
-                        if (cells.length < 2) continue;
-
-                        const customerId = cells[0];
-                        const name = cells[1];
-
-                        if (!name) continue;
-
-                        // 同じIDの顧客が既に存在する場合はスキップ
-                        if (customers.some(c => c.id === customerId)) {
-                            skippedCount++;
-                            continue;
-                        }
-
-                        const customer = {
-                            id: customerId,
-                            name: name,
-                            phone: cells[2] || '',
-                            email: cells[3] || '',
-                            school: cells[4] || '',
-                            affiliation: cells[5] || '',
-                            category: cells[6] || '',
-                            vip: cells[7]?.toLowerCase() === 'はい',
-                            tsumigi: cells[8]?.toLowerCase() === 'はい',
-                            createdDate: cells[9] || new Date().toISOString().split('T')[0],
-                            memo: ''
-                        };
-
-                        customers.push(customer);
-                        importedCount++;
-                    }
-
-                    localStorage.setItem(StorageKey.CUSTOMERS, JSON.stringify(customers));
-                    document.getElementById('importCustomersFile').value = '';
-                    
-                    alert(`✅ インポート完了\n新規追加: ${importedCount}件\nスキップ: ${skippedCount}件`);
-                    renderCustomerList();
-                } catch (error) {
-                    alert('❌ インポートエラー: ' + error.message);
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('passwordInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    checkPassword();
                 }
-            };
-            reader.readAsText(file);
-        }
-
-        // 購入履歴をCSVからインポート
-        function importPurchasesFromCSV() {
-            const file = document.getElementById('importPurchasesFile').files[0];
-            if (!file) {
-                alert('ファイルを選択してください');
-                return;
-            }
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const csv = e.target.result;
-                    const lines = csv.split('\n');
-                    
-                    if (lines.length < 2) {
-                        alert('CSVファイルが空です');
-                        return;
-                    }
-
-                    const purchases = JSON.parse(localStorage.getItem(StorageKey.PURCHASES)) || [];
-                    let importedCount = 0;
-                    let skippedCount = 0;
-
-                    // ヘッダーをスキップしてデータを処理
-                    for (let i = 1; i < lines.length; i++) {
-                        const line = lines[i].trim();
-                        if (!line) continue;
-
-                        // CSV形式をパース（ダブルクォート対応）
-                        const cells = parseCSVLine(line);
-                        
-                        if (cells.length < 5) continue;
-
-                        const purchaseId = cells[0];
-                        const customerId = cells[1];
-                        const amount = parseInt(cells[4]) || 0;
-
-                        if (!purchaseId || !customerId || amount === 0) continue;
-
-                        // 同じIDの購入が既に存在する場合はスキップ
-                        if (purchases.some(p => p.id === purchaseId)) {
-                            skippedCount++;
-                            continue;
-                        }
-
-                        const purchase = {
-                            id: purchaseId,
-                            customerId: customerId,
-                            date: cells[3] || new Date().toISOString().split('T')[0],
-                            amount: amount,
-                            product: cells[5] || '',
-                            loanBalance: parseInt(cells[6]) || 0,
-                            paymentCount: 0,
-                            finalPayment: '',
-                            year: '',
-                            exhibition: '',
-                            exhibitionOther: '',
-                            timestamp: new Date().toISOString()
-                        };
-
-                        purchases.push(purchase);
-                        importedCount++;
-                    }
-
-                    localStorage.setItem(StorageKey.PURCHASES, JSON.stringify(purchases));
-                    document.getElementById('importPurchasesFile').value = '';
-                    
-                    alert(`✅ インポート完了\n新規追加: ${importedCount}件\nスキップ: ${skippedCount}件`);
-                } catch (error) {
-                    alert('❌ インポートエラー: ' + error.message);
-                }
-            };
-            reader.readAsText(file);
-        }
-
-        // CSV行をパース（ダブルクォート対応）
-        function parseCSVLine(line) {
-            const result = [];
-            let current = '';
-            let insideQuotes = false;
-
-            for (let i = 0; i < line.length; i++) {
-                const char = line[i];
-                const nextChar = line[i + 1];
-
-                if (char === '"') {
-                    if (insideQuotes && nextChar === '"') {
-                        current += '"';
-                        i++;
-                    } else {
-                        insideQuotes = !insideQuotes;
-                    }
-                } else if (char === ',' && !insideQuotes) {
-                    result.push(current.trim());
-                    current = '';
-                } else {
-                    current += char;
-                }
-            }
-
-            result.push(current.trim());
-            return result;
-        }
-
-        // CSVをダウンロード
-        function downloadCSV(csv, filename) {
-            const bom = '\uFEFF';
-            const blob = new Blob([bom + csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = filename;
-            link.click();
-        }
-
-        // 初期化実行
-        window.addEventListener('DOMContentLoaded', init);
-
-        // ライトボックスを閉じる（外側をクリック）
-        document.getElementById('lightbox')?.addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeLightbox();
-            }
+            });
         });
     </script>
 </body>
